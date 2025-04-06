@@ -7,6 +7,7 @@ import { useState } from "react"
 
 export const Route = createFileRoute("/device/$deviceId")({
 	component: RouteComponent,
+	loader: () => {},
 })
 
 function RouteComponent() {
@@ -25,6 +26,8 @@ function RouteComponent() {
 		"temp",
 		"hum",
 	])
+
+	// const
 
 	const chartData = [
 		{ month: "January", temp: 186, hum: 80 },
