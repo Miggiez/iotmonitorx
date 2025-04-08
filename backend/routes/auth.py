@@ -56,7 +56,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
 
 
 # ------------------ Auth Routes ------------------ #
-@auth_router.post("/auth/login")
+@auth_router.post("/auth/login", status_code=status.HTTP_200_OK)
 def login_user(login_request: LoginRequest):
     user = user_col.find_one({"username": login_request.username})
     if not user or not bcrypt_context.verify(login_request.password, user["password"]):

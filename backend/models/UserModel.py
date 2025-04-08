@@ -1,6 +1,5 @@
 from datetime import datetime
 from enum import Enum
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -28,8 +27,8 @@ class ChartMeasurement(BaseModel):
 
 class Devices(BaseModel):
     device_name: str
-    charts: Optional[str] = []
-    gauges: Optional[str] = []
+    charts: list[str] = []
+    gauges: list[str] = []
     project_id: str
     updated_at: datetime
     created_at: datetime
@@ -37,7 +36,7 @@ class Devices(BaseModel):
 
 class Project(BaseModel):
     title: str
-    devices: Optional[str] = []
+    devices: list[str] = []
     user_id: str
     updated_at: datetime
     created_at: datetime
@@ -75,8 +74,8 @@ class User(BaseModel):
     username: str
     email: str
     password: str = Field(min_length=6)
-    project: Optional[str] = []
-    logs: Optional[str] = []
+    project: list[str] = []
+    logs: list[str] = []
     role: RoleEnum = RoleEnum.user
     updated_at: datetime
     created_at: datetime

@@ -51,7 +51,7 @@ async def edit_chart(id: str, charts: ChartMeasurement):
         updated_at=datetime.now(),
     )
     chart_col.update_one({"_id": ObjectId(id)}, {"$set": dict(chart)})
-    return {"message": f"Successfully edited {id}"}
+    return {"message": f"Successfully edited Chart {id}"}
 
 
 @chart_router.delete("/charts/delete/{id}", status_code=status.HTTP_200_OK)
@@ -67,4 +67,4 @@ async def delete_chart(id: str):
         {"$pull": {"charts": ObjectId(id)}},
     )
     chart_col.find_one_and_delete({"_id": ObjectId(id)})
-    return {"message": f"Successfully deleted {id} {chart['title']}"}
+    return {"message": f"Successfully deleted Chart {id} {chart['title']}"}

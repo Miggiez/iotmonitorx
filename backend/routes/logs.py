@@ -4,19 +4,18 @@ from bson import ObjectId
 from configurations import logs_col, user_col
 from fastapi import APIRouter, HTTPException, status
 from models.UserModel import Logs
-from schemas.LogSchema import log_list_serial
 
 log_router = APIRouter(prefix="/logs", tags=["logs"])
 
 
-@log_router.get("/getall", status_code=status.HTTP_200_OK)
-async def get_all_logs():
-    logs = log_list_serial(logs_col.find())
-    return logs
-
-
-@log_router.post("/create/log")
+@log_router.post("/create/log", status_code=status.HTTP_201_CREATED)
 async def post_device(logs: Logs):
+    user = user_col.find_one({"_id": ObjectId(logs.user_id)})
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User with id: {logs.user_id} does not exist",
+        )
     log = Logs(
         title=logs.title,
         l_type=logs.l_type,
@@ -26,11 +25,15 @@ async def post_device(logs: Logs):
         updated_at=datetime.now(),
         created_at=datetime.now(),
     )
-    logs.insert_one(dict(log))
+    id = logs_col.insert_one(dict(log)).inserted_id
+    user_col.update_one(
+        {"_id": ObjectId(logs["user_id"])}, {"$push": {"logs": ObjectId(id)}}
+    )
+
     return {"message": f"Created Log {log.title} Successfully!"}
 
 
-@log_router.put("/edit/{id}")
+@log_router.put("/edit/{id}", status_code=status.HTTP_202_ACCEPTED)
 async def edit_log(id: str, logs: Logs):
     log = logs_col.find_one({"_id": ObjectId(id)})
     if log is None:

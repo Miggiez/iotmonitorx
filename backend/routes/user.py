@@ -1,12 +1,22 @@
 from datetime import datetime
 
 from bson import ObjectId
-from configurations import project_col, user_col
+from configurations import (
+    logs_col,
+    project_col,
+    user_col,
+)
 from fastapi import APIRouter, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from models.UserModel import RoleEnum, User
+from models.UserModel import User
 from passlib.context import CryptContext
-from schemas.UserSchema import user_individual_serial, user_list_serial
+from schemas.LogSchema import log_list_serial
+from schemas.ProjectSchema import project_list_serial
+from schemas.UserSchema import (
+    delete_projects_array,
+    user_individual_serial,
+    user_list_serial,
+)
 
 user_router = APIRouter(prefix="/user", tags=["user"])
 SECRET_KEY = "your_super_secret_key_here"
@@ -16,7 +26,7 @@ oauth2_bearer = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
 @user_router.post("/create/user", status_code=status.HTTP_201_CREATED)
-def register_user(user: User):
+async def register_user(user: User):
     # Check if the username already exists
     if user_col.find_one({"username": user.username}):
         raise HTTPException(
@@ -40,12 +50,12 @@ def register_user(user: User):
     return {"message": "User created successfully", "user": db_user.username}
 
 
-@user_router.get("/get/users")
+@user_router.get("/get/users", status_code=status.HTTP_200_OK)
 async def find_all_users():
     return user_list_serial(user_col.find())
 
 
-@user_router.get("/get/user/{user_id}")
+@user_router.get("/get/user/{user_id}", status_code=status.HTTP_200_OK)
 async def find_user_by_id(user_id: str):
     user = user_col.find_one({"_id": ObjectId(user_id)})
     if user:
@@ -56,21 +66,24 @@ async def find_user_by_id(user_id: str):
         )
 
 
-@user_router.get("/get/usersby/{role}")
-async def find_users_by_roleId(role: RoleEnum):
-    users = user_col.find({"role": role})
-    if users:
-        return user_list_serial(users)
-    else:
-        return {"message": "Users with this role is empty"}
+# @user_router.get("/get/usersby/{role}", status_code=status.HTTP_200_OK)
+# async def find_users_by_roleId(role: RoleEnum):
+#     users = user_col.find({"role": role})
+#     if users:
+#         return user_list_serial(users)
+#     else:
+#         return {"message": "Users with this role is empty"}
 
 
-@user_router.put("/update/user/{user_id}")
+@user_router.put("/update/user/{user_id}", status_code=status.HTTP_202_ACCEPTED)
 async def update_user(user_id: str, user: User):
     # Check if the user exists
     existing_user = user_col.users.find_one({"_id": ObjectId(user_id)})
     if not existing_user:
-        return {"error": "User not found"}
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User with id {user_id} does not exist",
+        )
     hashed_password = bcrypt_context.hash(user.password)
     user = User(
         username=user.username,
@@ -78,8 +91,8 @@ async def update_user(user_id: str, user: User):
         password=hashed_password,
         project=user.project,
         logs=user.logs,
-        role=user.role,
         created_at=existing_user["created_at"],
+        role=user.role,
         updated_at=datetime.now(),
     )
     # Update the user in the database
@@ -96,13 +109,37 @@ async def update_user(user_id: str, user: User):
         )
 
 
-@user_router.delete("/delete/user/{user_id}")
+@user_router.delete("/delete/user/{user_id}", status_code=status.HTTP_202_ACCEPTED)
 async def delete_user(user_id: str):
     user = user_col.find_one({"_id": ObjectId(user_id)})
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found!"
         )
+    delete_projects_array(user["project"])
     user_col.delete_one({"_id": ObjectId(user_id)})
-    project_col.delete_many({"_id": {"$in": user["project"]}})
     return {"message": f"User with id: {user_id} is successfully deleted!"}
+
+
+@user_router.get("{id}/getall/logs", status_code=status.HTTP_200_OK)
+async def get_all_logs(id: str):
+    user = user_col.find_one({"_id": ObjectId(id)})
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User with id {id} does not exist",
+        )
+    logs = log_list_serial(logs_col.find({"_id": {"$in": user["logs"]}}))
+    return logs
+
+
+@user_router.get("{id}/getall/projects", status_code=status.HTTP_200_OK)
+async def get_projects(id: str):
+    user = user_col.find_one({"_id": ObjectId(id)})
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User with id {id} does not exist",
+        )
+    project = project_list_serial(project_col.find({"_id": {"$in": user["projec"]}}))
+    return project
