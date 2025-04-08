@@ -1,4 +1,4 @@
-def individual_serial(projects):
+def project_individual_serial(projects):
     return {
         "id": str(projects["_id"]),
         "title": projects["title"],
@@ -8,4 +8,4 @@ def individual_serial(projects):
 
 
 def project_list_serial(projects) -> list:
-    return [individual_serial(project) for project in projects]
+    return [project_individual_serial(project) for project in projects]

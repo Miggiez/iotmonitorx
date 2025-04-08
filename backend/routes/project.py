@@ -1,14 +1,14 @@
 from configurations import project_col
 from fastapi import APIRouter
 from models.UserModel import Project
-from schemas.UserSchema import list_serial
+from schemas.ProjectSchema import project_list_serial
 
 project_router = APIRouter(prefix="/projects", tags=["projects"])
 
 
 @project_router.get("/getall")
 async def get_projects():
-    project = list_serial(project_col.find())
+    project = project_list_serial(project_col.find())
     return project
 
 

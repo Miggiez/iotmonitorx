@@ -1,4 +1,4 @@
-def individual_serial(gauges):
+def gauge_individual_serial(gauges):
     return {
         "id": str(gauges["_id"]),
         "topic": gauges["topic"],
@@ -12,4 +12,4 @@ def individual_serial(gauges):
 
 
 def gauge_list_serial(gauges) -> list:
-    return [individual_serial(gauge) for gauge in gauges]
+    return [gauge_individual_serial(gauge) for gauge in gauges]

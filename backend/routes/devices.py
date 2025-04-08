@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from bson import ObjectId
 from configurations import chart_col, devices_col
 from fastapi import APIRouter, HTTPException, status
@@ -16,13 +18,35 @@ async def get_devices():
 
 @device_router.post("/create/device")
 async def post_device(devices: Devices):
-    devices_col.insert_one(dict(devices))
-    return {"message": f"Created Device {devices.device_name}  Successfully!"}
+    device = Devices(
+        device_name=devices.device_name,
+        charts=[],
+        gauges=[],
+        project_id=devices.project_id,
+        created_at=datetime.now(),
+        updated_at=datetime.now(),
+    )
+    devices_col.insert_one(dict(device))
+    return {"message": f"Created Device {device.device_name}  Successfully!"}
 
 
 @device_router.put("/edit/{id}")
 async def edit_device(id: str, devices: Devices):
-    devices_col.find_one_and_update({"_id": ObjectId(id)}, {"$set": dict(devices)})
+    dev = devices_col.find_one({"_id": ObjectId(id)})
+    if dev is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Device with id {id} is not Found!",
+        )
+    device = Devices(
+        device_name=devices.device_name,
+        charts=dev["charts"],
+        gauges=dev["gauges"],
+        project_id=devices.project_id,
+        created_at=datetime.now(),
+        updated_at=datetime.now(),
+    )
+    devices_col.update_one({"_id": ObjectId(id)}, {"$set": dict(device)})
     return {"message": f"Successfully edited {id}"}
 
 
