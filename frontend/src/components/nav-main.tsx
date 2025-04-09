@@ -4,6 +4,7 @@ import {
 	Bot,
 	ChevronRight,
 	PlusCircle,
+	RefreshCw,
 	Settings2,
 	Terminal,
 	type LucideIcon,
@@ -25,6 +26,8 @@ import {
 	SidebarMenuSubItem,
 } from "@/components/ui/sidebar"
 import { Link } from "@tanstack/react-router"
+import { FormProject } from "./form-projects"
+import { FormDevices } from "./form-devices"
 
 export function NavMain({
 	projects,
@@ -43,7 +46,14 @@ export function NavMain({
 	return (
 		<>
 			<SidebarGroup>
-				<SidebarGroupLabel>Projects</SidebarGroupLabel>
+				<SidebarGroupLabel>
+					<div className="flex items-center w-[100%]">
+						Projects
+						<div className="ml-auto inline-block cursor-pointer">
+							<RefreshCw className="w-4" />
+						</div>
+					</div>
+				</SidebarGroupLabel>
 				<SidebarMenu>
 					{projects.map((project) => (
 						<Collapsible
@@ -72,12 +82,13 @@ export function NavMain({
 											</SidebarMenuSubItem>
 										))}
 										<SidebarMenuSubItem>
-											<SidebarMenuSubButton asChild>
+											{/* <SidebarMenuSubButton asChild>
 												<div className="cursor-pointer" onClick={() => {}}>
 													<PlusCircle />
 													<span>Add Device</span>
 												</div>
-											</SidebarMenuSubButton>
+											</SidebarMenuSubButton> */}
+											<FormDevices />
 										</SidebarMenuSubItem>
 									</SidebarMenuSub>
 								</CollapsibleContent>
@@ -85,12 +96,7 @@ export function NavMain({
 						</Collapsible>
 					))}
 					<SidebarMenuItem>
-						<SidebarMenuButton asChild>
-							<div className="cursor-pointer" onClick={() => {}}>
-								<PlusCircle />
-								<span>Add Project</span>
-							</div>
-						</SidebarMenuButton>
+						<FormProject />
 					</SidebarMenuItem>
 				</SidebarMenu>
 			</SidebarGroup>

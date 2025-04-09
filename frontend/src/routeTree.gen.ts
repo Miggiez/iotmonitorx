@@ -11,10 +11,17 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as DashboardImport } from './routes/dashboard'
 import { Route as IndexImport } from './routes/index'
-import { Route as DeviceDeviceIdImport } from './routes/device/$deviceId'
+import { Route as DashboardDeviceDeviceIdImport } from './routes/dashboard/device/$deviceId'
 
 // Create/Update Routes
+
+const DashboardRoute = DashboardImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const IndexRoute = IndexImport.update({
   id: '/',
@@ -22,10 +29,10 @@ const IndexRoute = IndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const DeviceDeviceIdRoute = DeviceDeviceIdImport.update({
+const DashboardDeviceDeviceIdRoute = DashboardDeviceDeviceIdImport.update({
   id: '/device/$deviceId',
   path: '/device/$deviceId',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => DashboardRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
@@ -39,51 +46,73 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
-    '/device/$deviceId': {
-      id: '/device/$deviceId'
-      path: '/device/$deviceId'
-      fullPath: '/device/$deviceId'
-      preLoaderRoute: typeof DeviceDeviceIdImport
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardImport
       parentRoute: typeof rootRoute
+    }
+    '/dashboard/device/$deviceId': {
+      id: '/dashboard/device/$deviceId'
+      path: '/device/$deviceId'
+      fullPath: '/dashboard/device/$deviceId'
+      preLoaderRoute: typeof DashboardDeviceDeviceIdImport
+      parentRoute: typeof DashboardImport
     }
   }
 }
 
 // Create and export the route tree
 
+interface DashboardRouteChildren {
+  DashboardDeviceDeviceIdRoute: typeof DashboardDeviceDeviceIdRoute
+}
+
+const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardDeviceDeviceIdRoute: DashboardDeviceDeviceIdRoute,
+}
+
+const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
+  DashboardRouteChildren,
+)
+
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/device/$deviceId': typeof DeviceDeviceIdRoute
+  '/dashboard': typeof DashboardRouteWithChildren
+  '/dashboard/device/$deviceId': typeof DashboardDeviceDeviceIdRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/device/$deviceId': typeof DeviceDeviceIdRoute
+  '/dashboard': typeof DashboardRouteWithChildren
+  '/dashboard/device/$deviceId': typeof DashboardDeviceDeviceIdRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
-  '/device/$deviceId': typeof DeviceDeviceIdRoute
+  '/dashboard': typeof DashboardRouteWithChildren
+  '/dashboard/device/$deviceId': typeof DashboardDeviceDeviceIdRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/device/$deviceId'
+  fullPaths: '/' | '/dashboard' | '/dashboard/device/$deviceId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/device/$deviceId'
-  id: '__root__' | '/' | '/device/$deviceId'
+  to: '/' | '/dashboard' | '/dashboard/device/$deviceId'
+  id: '__root__' | '/' | '/dashboard' | '/dashboard/device/$deviceId'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  DeviceDeviceIdRoute: typeof DeviceDeviceIdRoute
+  DashboardRoute: typeof DashboardRouteWithChildren
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  DeviceDeviceIdRoute: DeviceDeviceIdRoute,
+  DashboardRoute: DashboardRouteWithChildren,
 }
 
 export const routeTree = rootRoute
@@ -97,14 +126,21 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/device/$deviceId"
+        "/dashboard"
       ]
     },
     "/": {
       "filePath": "index.tsx"
     },
-    "/device/$deviceId": {
-      "filePath": "device/$deviceId.tsx"
+    "/dashboard": {
+      "filePath": "dashboard.tsx",
+      "children": [
+        "/dashboard/device/$deviceId"
+      ]
+    },
+    "/dashboard/device/$deviceId": {
+      "filePath": "dashboard/device/$deviceId.tsx",
+      "parent": "/dashboard"
     }
   }
 }

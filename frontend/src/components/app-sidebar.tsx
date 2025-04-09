@@ -1,5 +1,6 @@
-import * as React from "react"
+import React, { useEffect } from "react"
 import { SquareTerminal } from "lucide-react"
+import axios from "axios"
 
 import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
@@ -17,7 +18,10 @@ const data = {
 		email: "user1@example.com",
 		avatar: "/avatars/shadcn.jpg",
 	},
-	navMain: [
+}
+
+const navMain = {
+	projects: [
 		{
 			title: "Project1",
 			url: ".",
@@ -26,11 +30,11 @@ const data = {
 			devices: [
 				{
 					title: "ESP32-1",
-					url: "/device/1",
+					url: "/dashboard/device/1",
 				},
 				{
 					title: "ESP32-2",
-					url: "/device/2",
+					url: "/dashboard/device/2",
 				},
 			],
 		},
@@ -42,11 +46,11 @@ const data = {
 			devices: [
 				{
 					title: "ESP32-3",
-					url: "/device/3",
+					url: "/dashboard/device/3",
 				},
 				{
 					title: "ESP32-4",
-					url: "/device/4",
+					url: "/dashboard/device/4",
 				},
 			],
 		},
@@ -54,13 +58,14 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+	useEffect(() => {})
 	return (
 		<Sidebar collapsible="icon" {...props}>
 			<SidebarHeader>
 				<NavUser user={data.user} />
 			</SidebarHeader>
 			<SidebarContent>
-				<NavMain projects={data.navMain} />
+				<NavMain projects={navMain.projects} />
 			</SidebarContent>
 			<SidebarRail />
 		</Sidebar>

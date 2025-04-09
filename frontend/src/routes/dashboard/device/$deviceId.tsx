@@ -5,7 +5,7 @@ import { Separator } from "@/components/ui/separator"
 import { createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
 
-export const Route = createFileRoute("/device/$deviceId")({
+export const Route = createFileRoute("/dashboard/device/$deviceId")({
 	component: RouteComponent,
 	loader: () => {},
 })
