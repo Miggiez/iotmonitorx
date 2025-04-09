@@ -19,11 +19,11 @@ const data = {
 	},
 	navMain: [
 		{
-			title: "Devices",
+			title: "Project1",
 			url: ".",
 			icon: SquareTerminal,
 			isActive: true,
-			items: [
+			devices: [
 				{
 					title: "ESP32-1",
 					url: "/device/1",
@@ -31,6 +31,22 @@ const data = {
 				{
 					title: "ESP32-2",
 					url: "/device/2",
+				},
+			],
+		},
+		{
+			title: "Project2",
+			url: ".",
+			icon: SquareTerminal,
+			isActive: false,
+			devices: [
+				{
+					title: "ESP32-3",
+					url: "/device/3",
+				},
+				{
+					title: "ESP32-4",
+					url: "/device/4",
 				},
 			],
 		},
@@ -44,7 +60,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 				<NavUser user={data.user} />
 			</SidebarHeader>
 			<SidebarContent>
-				<NavMain items={data.navMain} />
+				<NavMain projects={data.navMain} />
 			</SidebarContent>
 			<SidebarRail />
 		</Sidebar>

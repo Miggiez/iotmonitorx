@@ -42,7 +42,7 @@ function RouteComponent() {
 		<div>
 			<h1 className="text-2xl font-bold mb-3">Device {deviceId}</h1>
 			<Separator className="mb-10" />
-			<div className="flex flex-wrap space-x-10 space-y-4">
+			<div className="flex flex-wrap justify-center space-x-10 space-y-4">
 				<Gauge
 					title="ESP32 Humidity"
 					value={10}
