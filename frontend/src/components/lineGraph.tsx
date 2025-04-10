@@ -11,22 +11,13 @@ import {
 export default function LineGraph({
 	title,
 	data,
-	configs = {
-		temp: {
-			label: "temp",
-			color: "black",
-		},
-		hum: {
-			label: "hum",
-			color: "blue",
-		},
-	},
-	dataKeyTypes = ["temp", "hum"],
+	configs = {},
+	dataKey = "",
 }: {
 	title: string
 	data: Array<any>
 	configs: ChartConfig
-	dataKeyTypes: Array<string>
+	dataKey: string
 }) {
 	return (
 		<Card className="w-[600px]">
@@ -53,15 +44,13 @@ export default function LineGraph({
 							tickFormatter={(value) => value.slice(0, 3)}
 						/>
 						<ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-						{dataKeyTypes.map((dataKey) => (
-							<Line
-								dataKey={dataKey}
-								type="monotone"
-								stroke={`var(--color-${dataKey})`}
-								strokeWidth={2}
-								dot={false}
-							/>
-						))}
+						<Line
+							dataKey={dataKey}
+							type="monotone"
+							stroke={`var(--color-${dataKey})`}
+							strokeWidth={2}
+							dot={false}
+						/>
 					</LineChart>
 				</ChartContainer>
 			</CardContent>

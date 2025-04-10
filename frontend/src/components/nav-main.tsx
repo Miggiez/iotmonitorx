@@ -3,7 +3,6 @@
 import {
 	Bot,
 	ChevronRight,
-	PlusCircle,
 	RefreshCw,
 	Settings2,
 	Terminal,
@@ -82,12 +81,6 @@ export function NavMain({
 											</SidebarMenuSubItem>
 										))}
 										<SidebarMenuSubItem>
-											{/* <SidebarMenuSubButton asChild>
-												<div className="cursor-pointer" onClick={() => {}}>
-													<PlusCircle />
-													<span>Add Device</span>
-												</div>
-											</SidebarMenuSubButton> */}
 											<FormDevices />
 										</SidebarMenuSubItem>
 									</SidebarMenuSub>

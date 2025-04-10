@@ -1,8 +1,11 @@
+import { FormGaugesCharts } from "@/components/form-gauges-charts"
 import Gauge from "@/components/gauge"
 import LineGraph from "@/components/lineGraph"
+import { ShareJWT } from "@/components/share-jwt"
 import { ChartConfig } from "@/components/ui/chart"
 import { Separator } from "@/components/ui/separator"
 import { createFileRoute } from "@tanstack/react-router"
+import { PlusCircle, Trash2 } from "lucide-react"
 import { useState } from "react"
 
 export const Route = createFileRoute("/dashboard/device/$deviceId")({
@@ -12,35 +15,39 @@ export const Route = createFileRoute("/dashboard/device/$deviceId")({
 
 function RouteComponent() {
 	const { deviceId } = Route.useParams()
-	const [configs, setConfigs] = useState<ChartConfig>({
-		temp: {
-			label: "Temperature",
-			color: "black",
-		},
-		hum: {
-			label: "Humidity",
-			color: "blue",
-		},
-	})
-	const [dataKeyTypes, setDataKeyTypes] = useState<Array<string>>([
-		"temp",
-		"hum",
-	])
+	// const [configs, setConfigs] = useState<ChartConfig>({
+	// 	temp: {
+	// 		label: "Temperature",
+	// 		color: "black",
+	// 	},
+	// 	hum: {
+	// 		label: "Humidity",
+	// 		color: "blue",
+	// 	},
+	// })
+	// const [dataKey, setDataKey] = useState<string>("temp")
 
-	// const
-
-	const chartData = [
-		{ month: "January", temp: 186, hum: 80 },
-		{ month: "February", temp: 305, hum: 200 },
-		{ month: "March", temp: 237, hum: 120 },
-		{ month: "April", temp: 73, hum: 190 },
-		{ month: "May", temp: 209, hum: 130 },
-		{ month: "June", temp: 214, hum: 140 },
-	]
+	// const chartData = [
+	// 	{ month: "January", temp: 186 },
+	// 	{ month: "February", temp: 305 },
+	// 	{ month: "March", temp: 237 },
+	// 	{ month: "April", temp: 73 },
+	// 	{ month: "May", temp: 209 },
+	// 	{ month: "June", temp: 214 },
+	// ]
 
 	return (
 		<div>
-			<h1 className="text-2xl font-bold mb-3">Device {deviceId}</h1>
+			<div className="flex w-[100%] items-center py-3">
+				<h1 className="text-2xl font-bold mb-3">Device {deviceId}</h1>
+				<div className="flex gap-6 justify-center items-center ml-auto">
+					<ShareJWT />
+					<FormGaugesCharts />
+					<div className="cursor-pointer hover:shadow-2xl p-1 hover:border-2 hover:rounded-[5px]">
+						<Trash2 className="text-red-400" />
+					</div>
+				</div>
+			</div>
 			<Separator className="mb-10" />
 			<div className="flex flex-wrap justify-center space-x-10 space-y-4">
 				<Gauge
@@ -55,8 +62,8 @@ function RouteComponent() {
 					title="ESP32 Temp C"
 					value={31}
 					maxValue={50}
-					minValue={-10}
 					type="Temperature Sensor C"
+					minValue={-10}
 					unit="°C"
 				/>
 				<Gauge
@@ -75,12 +82,12 @@ function RouteComponent() {
 					type="Light Sensor"
 					unit="Lux"
 				/>
-				<LineGraph
+				{/* <LineGraph
 					title="Lux and Temp"
 					data={chartData}
 					configs={configs}
-					dataKeyTypes={dataKeyTypes}
-				/>
+					dataKey={dataKey}
+				/> */}
 			</div>
 		</div>
 	)

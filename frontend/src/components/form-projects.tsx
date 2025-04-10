@@ -10,8 +10,7 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { DialogClose } from "@radix-ui/react-dialog"
-import { DoorClosed, PlusCircle } from "lucide-react"
+import { PlusCircle } from "lucide-react"
 import { useState } from "react"
 
 export function FormProject() {
@@ -41,7 +40,7 @@ export function FormProject() {
 				<div className="grid gap-4 py-4">
 					<div className="grid grid-cols-4 items-center gap-4">
 						<Label htmlFor="title" className="text-right">
-							title
+							Title
 						</Label>
 						<Input
 							id="title"
