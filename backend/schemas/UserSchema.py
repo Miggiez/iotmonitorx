@@ -1,6 +1,6 @@
 from bson import ObjectId
 from configurations import logs_col, project_col
-from DeviceSchema import delete_devices_array
+from schemas.ProjectSchema import delete_devices_array
 
 
 def user_individual_serial(users):

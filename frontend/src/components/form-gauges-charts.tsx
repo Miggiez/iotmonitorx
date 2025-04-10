@@ -51,7 +51,6 @@ export function FormGaugesCharts() {
 		color: "black",
 	})
 
-	const [numberInput, setNumberInput] = useState<number>(1)
 	const [selection, setSelection] = useState<string>("gauge")
 
 	const handleFormGaugeChange = (e: React.ChangeEvent<HTMLInputElement>) => {

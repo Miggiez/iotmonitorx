@@ -1,7 +1,6 @@
 from bson import ObjectId
-from ChartSchema import delete_charts_array
 from configurations import devices_col
-from GaugeSchema import delete_gauges_array
+from schemas.DeviceSchema import delete_charts_array, delete_gauges_array
 
 
 def project_individual_serial(projects):

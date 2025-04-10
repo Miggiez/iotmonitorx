@@ -1,0 +1,33 @@
+services:
+  # mqtt5 eclipse-mosquitto
+  nginxs:
+    image: nginx
+    container_name: nginxs
+    hostname: nginxs
+    ports:
+      - "9000:80"
+    restart: unless-stopped
+  mongodb:
+    image: mongodb/mongodb-community-server
+    container_name: mongodb
+    hostname: mongodb
+    ports:
+      - "27018:27017"
+    restart: unless-stopped
+  mqtt:
+    image: eclipse-mosquitto
+    container_name: mqtt
+    hostname: mqtt
+    ports:
+      - "1883:1883" #default mqtt port
+    volumes:
+      - ./mqtt/config:/mosquitto/config:rw
+      - ./mqtt/data:/mosquitto/data:rw
+      - ./mqtt/log:/mosquitto/log:rw
+    restart: unless-stopped
+
+# volumes for mapping data,config and log
+volumes:
+  config:
+  data:
+  log:
