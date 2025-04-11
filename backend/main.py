@@ -1,5 +1,10 @@
+from contextlib import asynccontextmanager
+from typing import Any
+
 import uvicorn
 from fastapi import FastAPI
+from fastapi_mqtt import FastMQTT, MQTTConfig
+from gmqtt import Client as MQTTClient
 from pymongo.errors import ConnectionFailure
 from pymongo.mongo_client import MongoClient
 from routes.auth import auth_router
@@ -9,7 +14,36 @@ from routes.gauge import gauge_router
 from routes.project import project_router
 from routes.user import user_router
 
-app = FastAPI()
+mqtt_config = MQTTConfig(host="127.0.0.1", port=1883, keepalive=60)
+fast_mqtt = FastMQTT(config=mqtt_config)
+
+
+@asynccontextmanager
+async def _lifespan(_app: FastAPI):
+    await fast_mqtt.mqtt_startup()
+    yield
+    await fast_mqtt.mqtt_shutdown()
+
+
+app = FastAPI(lifespan=_lifespan)
+
+
+@fast_mqtt.on_connect()
+def connect(client: MQTTClient, flags: int, rc: int, properties: Any):
+    client.subscribe("/#")  # subscribing mqtt topic
+    print("Connected: ", client, flags, rc, properties)
+
+
+@fast_mqtt.on_message()
+async def message(
+    client: MQTTClient, topic: str, payload: bytes, qos: int, properties: Any
+):
+    print("Received message: ", topic, payload.decode(), qos, properties)
+
+
+@fast_mqtt.on_disconnect()
+def disconnect(client: MQTTClient, packet, exc=None):
+    print("Disconnected")
 
 
 uri = "mongodb://localhost:27017"
