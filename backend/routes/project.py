@@ -26,8 +26,9 @@ async def post_project(projects: Project):
         updated_at=datetime.now(),
     )
     id = project_col.insert_one(dict(project)).inserted_id
-    user_col.update_one({"_id": ObjectId(id)}, {"$push": {"project": ObjectId(id)}})
-
+    user_col.find_one_and_update(
+        {"_id": ObjectId(project.user_id)}, {"$push": {"project": ObjectId(id)}}
+    )
     return {"message": f"Created Projects {project.title} Successfully!"}
 
 
@@ -58,12 +59,16 @@ async def delete_project(id: str):
             status_code=status.HTTP_404_NOT_FOUND,
             detail="You cannot delete Device id: {id}, because this does not exist",
         )
+    user_col.update_one(
+        {"_id": ObjectId(project["user_id"])},
+        {"$pull": {"project": ObjectId(id)}},
+    )
     delete_devices_array(project["devices"])
     project_col.delete_one({"_id": ObjectId(id)})
     return {"message": f"Successfully deleted Project {id}"}
 
 
-@project_router.get("{id}/getall/devices", status_code=status.HTTP_200_OK)
+@project_router.get("/{id}/getall/devices", status_code=status.HTTP_200_OK)
 async def get_devices():
     project = project_col.find_one({"_id": ObjectId(id)})
     if not project:

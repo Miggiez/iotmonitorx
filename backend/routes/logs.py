@@ -9,7 +9,7 @@ log_router = APIRouter(prefix="/logs", tags=["logs"])
 
 
 @log_router.post("/create/log", status_code=status.HTTP_201_CREATED)
-async def post_device(logs: Logs):
+async def post_logs(logs: Logs):
     user = user_col.find_one({"_id": ObjectId(logs.user_id)})
     if user is None:
         raise HTTPException(
@@ -55,7 +55,7 @@ async def edit_log(id: str, logs: Logs):
 
 
 @log_router.delete("/delete/{id}", status_code=status.HTTP_202_ACCEPTED)
-async def delet_log(id: str):
+async def delete_log(id: str):
     log = logs_col.find_one({"_id": ObjectId(id)})
     if log is None:
         raise HTTPException(

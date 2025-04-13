@@ -12,8 +12,8 @@ class GaugeMeasurements(BaseModel):
     m_type: str
     unit: str
     device_id: str
-    updated_at: datetime
-    created_at: datetime
+    updated_at: datetime = None
+    created_at: datetime = None
 
 
 class ChartMeasurement(BaseModel):
@@ -21,8 +21,8 @@ class ChartMeasurement(BaseModel):
     topic: str
     configs: object
     device_id: str
-    updated_at: datetime
-    created_at: datetime
+    updated_at: datetime = None
+    created_at: datetime = None
 
 
 class Devices(BaseModel):
@@ -30,16 +30,16 @@ class Devices(BaseModel):
     charts: list[str] = []
     gauges: list[str] = []
     project_id: str
-    updated_at: datetime
-    created_at: datetime
+    updated_at: datetime = None
+    created_at: datetime = None
 
 
 class Project(BaseModel):
     title: str
     devices: list[str] = []
     user_id: str
-    updated_at: datetime
-    created_at: datetime
+    updated_at: datetime = None
+    created_at: datetime = None
 
 
 class LogEnum(str, Enum):
@@ -61,8 +61,8 @@ class Logs(BaseModel):
     description: str
     level: LevelEnum
     user_id: str
-    updated_at: datetime
-    created_at: datetime
+    updated_at: datetime = None
+    created_at: datetime = None
 
 
 class RoleEnum(str, Enum):
@@ -77,5 +77,5 @@ class User(BaseModel):
     project: list[str] = []
     logs: list[str] = []
     role: RoleEnum = RoleEnum.user
-    updated_at: datetime
-    created_at: datetime
+    updated_at: datetime = None
+    created_at: datetime = None

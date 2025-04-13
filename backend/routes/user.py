@@ -66,15 +66,6 @@ async def find_user_by_id(user_id: str):
         )
 
 
-# @user_router.get("/get/usersby/{role}", status_code=status.HTTP_200_OK)
-# async def find_users_by_roleId(role: RoleEnum):
-#     users = user_col.find({"role": role})
-#     if users:
-#         return user_list_serial(users)
-#     else:
-#         return {"message": "Users with this role is empty"}
-
-
 @user_router.put("/update/user/{user_id}", status_code=status.HTTP_202_ACCEPTED)
 async def update_user(user_id: str, user: User):
     # Check if the user exists
@@ -117,11 +108,12 @@ async def delete_user(user_id: str):
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found!"
         )
     delete_projects_array(user["project"])
+    logs_col.delete_many({"_id": {"$in": user["logs"]}})
     user_col.delete_one({"_id": ObjectId(user_id)})
     return {"message": f"User with id: {user_id} is successfully deleted!"}
 
 
-@user_router.get("{id}/getall/logs", status_code=status.HTTP_200_OK)
+@user_router.get("/{id}/getall/logs", status_code=status.HTTP_200_OK)
 async def get_all_logs(id: str):
     user = user_col.find_one({"_id": ObjectId(id)})
     if user is None:
@@ -133,7 +125,7 @@ async def get_all_logs(id: str):
     return logs
 
 
-@user_router.get("{id}/getall/projects", status_code=status.HTTP_200_OK)
+@user_router.get("/{id}/getall/projects", status_code=status.HTTP_200_OK)
 async def get_projects(id: str):
     user = user_col.find_one({"_id": ObjectId(id)})
     if user is None:
@@ -141,5 +133,17 @@ async def get_projects(id: str):
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"User with id {id} does not exist",
         )
-    project = project_list_serial(project_col.find({"_id": {"$in": user["projec"]}}))
+    project = project_list_serial(project_col.find({"_id": {"$in": user["project"]}}))
     return project
+
+
+@user_router.get("/{id}/getall/logs", status_code=status.HTTP_200_OK)
+async def get_all_ogs(id: str):
+    user = user_col.find_one({"_id": ObjectId(id)})
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User with id {id} does not exist",
+        )
+    logs = user_list_serial(logs_col.find({"_id": {"$in": user["logs"]}}))
+    return logs
