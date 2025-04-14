@@ -28,7 +28,7 @@ async def create_chart(charts: ChartMeasurement):
 
     id = chart_col.insert_one(dict(chart)).inserted_id
     devices_col.find_one_and_update(
-        {"_id": ObjectId(chart.device_id)}, {"$push": {"charts": ObjectId(id)}}
+        {"_id": ObjectId(chart.device_id)}, {"$push": {"charts": id}}
     )
     return {"message": f"Created Chart {chart.title} Successfully!"}
 

@@ -1,6 +1,5 @@
-import React, { useEffect } from "react"
-import { SquareTerminal } from "lucide-react"
-import axios from "axios"
+import React, { useEffect, useState } from "react"
+import { LucideProps, SquareTerminal } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
@@ -10,11 +9,27 @@ import {
 	SidebarHeader,
 	SidebarRail,
 } from "@/components/ui/sidebar"
+import { getProjects } from "@/api/userDashboard"
+
+interface DeviceProps {
+	title: string
+	url: string
+}
+
+interface ProjectProps {
+	title: string
+	url: string
+	icon: React.ForwardRefExoticComponent<
+		Omit<LucideProps, "ref"> & React.RefAttributes<SVGSVGElement>
+	>
+	isActive: false
+	devices: DeviceProps
+}
 
 // This is sample data.
-const data = {
+const dataUser = {
 	user: {
-		name: "user1",
+		name: "67fb6dc64f25c8ff5feed76a",
 		email: "user1@example.com",
 		avatar: "/avatars/shadcn.jpg",
 	},
@@ -58,11 +73,14 @@ const navMain = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-	useEffect(() => {})
+	const [data, setData] = useState<Array<ProjectProps>>([])
+	useEffect(() => {
+		getProjects(dataUser.user.name)
+	})
 	return (
 		<Sidebar collapsible="icon" {...props}>
 			<SidebarHeader>
-				<NavUser user={data.user} />
+				<NavUser user={dataUser.user} />
 			</SidebarHeader>
 			<SidebarContent>
 				<NavMain projects={navMain.projects} />

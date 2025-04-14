@@ -7,7 +7,8 @@ def gauge_individual_serial(gauges):
         "min_value": gauges["min_value"],
         "m_type": gauges["m_type"],
         "unit": gauges["unit"],
-        "device_id": gauges["device_id"],
+        "created_at": gauges["created_at"],
+        "updated_at": gauges["updated_at"],
     }
 
 

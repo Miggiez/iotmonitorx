@@ -9,9 +9,9 @@ def user_individual_serial(users):
         "username": users["username"],
         "email": users["email"],
         "password": users["password"],
-        "project": users["project"],
-        "logs": users["logs"],
         "role": users["role"],
+        "created_at": users["created_at"],
+        "updated_at": users["updated_at"],
     }
 
 
@@ -21,7 +21,9 @@ def user_list_serial(users) -> list:
 
 async def delete_projects_array(projects: list[ObjectId]):
     for i in projects:
-        delete_devices_array(i["devices"])
+        proj = project_col.find_one({"_id": i})
+        if proj:
+            await delete_devices_array(proj["devices"])
 
     project_col.delete_many({"_id": {"$in": projects}})
 

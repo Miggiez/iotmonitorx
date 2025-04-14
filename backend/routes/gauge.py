@@ -14,7 +14,7 @@ async def create_chart(gauges: GaugeMeasurements):
     if device is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Device with id {gauges.device_id} is not found. You cannot proceed creating a chart without a device",
+            detail=f"Gauge with id {gauges.device_id} is not found. You cannot proceed creating a chart without a device",
         )
 
     gauge = GaugeMeasurements(
@@ -31,7 +31,7 @@ async def create_chart(gauges: GaugeMeasurements):
 
     id = gauge_col.insert_one(dict(gauge)).inserted_id
     devices_col.find_one_and_update(
-        {"_id": ObjectId(gauge.device_id)}, {"$push": {"gauges": ObjectId(id)}}
+        {"_id": ObjectId(gauge.device_id)}, {"$push": {"gauges": id}}
     )
     return {"message": f"Created Gauge {gauge.title} Successfully!"}
 
@@ -42,7 +42,7 @@ async def edit_chart(id: str, gauges: GaugeMeasurements):
     if ga is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Chart with id: {id} is not found",
+            detail=f"Gauge with id: {id} is not found",
         )
 
     gauge = GaugeMeasurements(
@@ -57,7 +57,7 @@ async def edit_chart(id: str, gauges: GaugeMeasurements):
         created_at=ga["device_id"],
     )
     gauge_col.update_one({"_id": ObjectId(id)}, {"$set": dict(gauge)})
-    return {"message": f"Successfully edited Chart {id}"}
+    return {"message": f"Successfully edited Gauge {id}"}
 
 
 @gauge_router.delete("/gauge/delete/{id}", status_code=status.HTTP_200_OK)

@@ -1,11 +1,7 @@
 from datetime import datetime
 
 from bson import ObjectId
-from configurations import (
-    logs_col,
-    project_col,
-    user_col,
-)
+from configurations import influx_connection, logs_col, project_col, user_col
 from fastapi import APIRouter, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from models.UserModel import User
@@ -102,12 +98,14 @@ async def update_user(user_id: str, user: User):
 
 @user_router.delete("/delete/user/{user_id}", status_code=status.HTTP_202_ACCEPTED)
 async def delete_user(user_id: str):
+    influx = influx_connection()
     user = user_col.find_one({"_id": ObjectId(user_id)})
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found!"
         )
-    delete_projects_array(user["project"])
+    influx.drop_database(user_id)
+    await delete_projects_array(user["project"])
     logs_col.delete_many({"_id": {"$in": user["logs"]}})
     user_col.delete_one({"_id": ObjectId(user_id)})
     return {"message": f"User with id: {user_id} is successfully deleted!"}
@@ -121,29 +119,18 @@ async def get_all_logs(id: str):
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"User with id {id} does not exist",
         )
-    logs = log_list_serial(logs_col.find({"_id": {"$in": user["logs"]}}))
+    logs = log_list_serial(logs_col.find({"_id": {"$in": ObjectId(user["logs"])}}))
+    print(logs)
     return logs
 
 
 @user_router.get("/{id}/getall/projects", status_code=status.HTTP_200_OK)
 async def get_projects(id: str):
     user = user_col.find_one({"_id": ObjectId(id)})
-    if user is None:
+    if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"User with id {id} does not exist",
+            detail=f"User with id {id} does not exist!",
         )
-    project = project_list_serial(project_col.find({"_id": {"$in": user["project"]}}))
-    return project
-
-
-@user_router.get("/{id}/getall/logs", status_code=status.HTTP_200_OK)
-async def get_all_ogs(id: str):
-    user = user_col.find_one({"_id": ObjectId(id)})
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"User with id {id} does not exist",
-        )
-    logs = user_list_serial(logs_col.find({"_id": {"$in": user["logs"]}}))
-    return logs
+    projects = project_list_serial(project_col.find({"_id": {"$in": user["project"]}}))
+    return projects

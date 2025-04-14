@@ -7,8 +7,8 @@ def project_individual_serial(projects):
     return {
         "id": str(projects["_id"]),
         "title": projects["title"],
-        "devices": projects["devices"],
-        "user_id": projects["user_id"],
+        "created_at": projects["created_at"],
+        "updated_at": projects["updated_at"],
     }
 
 
@@ -18,7 +18,9 @@ def project_list_serial(projects) -> list:
 
 async def delete_devices_array(devices: list[ObjectId]):
     for i in devices:
-        delete_charts_array(i["charts"])
-        delete_gauges_array(i["gauges"])
+        dev = devices_col.find_one({"_id": i})
+        if dev:
+            await delete_charts_array(dev["charts"])
+            await delete_gauges_array(dev["gauges"])
 
     devices_col.delete_many({"_id": {"$in": devices}})

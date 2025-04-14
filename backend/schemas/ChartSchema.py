@@ -4,7 +4,8 @@ def chart_individual_serial(charts):
         "title": charts["title"],
         "topic": charts["topic"],
         "configs": charts["configs"],
-        "device_id": charts["device_id"],
+        "created_at": charts["created_at"],
+        "updated_at": charts["updated_at"],
     }
 
 

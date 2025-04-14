@@ -6,9 +6,8 @@ def device_individual_serial(devices):
     return {
         "id": str(devices["_id"]),
         "device_name": devices["device_name"],
-        "charts": devices["charts"],
-        "gauges": devices["gauges"],
-        "project_id": devices["project_id"],
+        "created_at": devices["created_at"],
+        "updated_at": devices["updated_at"],
     }
 
 

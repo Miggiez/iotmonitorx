@@ -5,6 +5,7 @@ from configurations import (
     chart_col,
     devices_col,
     fast_mq,
+    gauge_col,
     influx_connection,
     project_col,
     user_col,
@@ -14,6 +15,7 @@ from models.UserModel import Devices
 from pydantic import BaseModel
 from schemas.ChartSchema import chart_list_serial
 from schemas.DeviceSchema import delete_charts_array, delete_gauges_array
+from schemas.GaugeSchema import gauge_list_serial
 
 device_router = APIRouter(prefix="/devices", tags=["devices"])
 
@@ -27,6 +29,13 @@ class Publisher(BaseModel):
 
 @device_router.post("/create/device", status_code=status.HTTP_201_CREATED)
 async def post_device(devices: Devices):
+    project = project_col.find_one({"_id": ObjectId(devices.project_id)})
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Project with id {devices.project_id} is not found. You cannot proceed creating a chart without a device",
+        )
+
     device = Devices(
         device_name=devices.device_name,
         charts=[],
@@ -37,7 +46,7 @@ async def post_device(devices: Devices):
     )
     id = devices_col.insert_one(dict(device)).inserted_id
     project_col.find_one_and_update(
-        {"_id": ObjectId(device.project_id)}, {"$push": {"devices": ObjectId(id)}}
+        {"_id": ObjectId(device.project_id)}, {"$push": {"devices": id}}
     )
     return {"message": f"Created Device {device.device_name}  Successfully!"}
 
@@ -62,8 +71,9 @@ async def edit_device(id: str, devices: Devices):
     return {"message": f"Successfully edited {id}"}
 
 
-@device_router.delete("/delete/{id}", status_code=status.HTTP_200_OK)
-async def delete_device(id: str):
+@device_router.delete("/delete/device/{id}/{user_id}", status_code=status.HTTP_200_OK)
+async def delete_device(id: str, user_id: str):
+    influx = influx_connection()
     device = devices_col.find_one({"_id": ObjectId(id)})
     if device is None:
         raise HTTPException(
@@ -74,8 +84,10 @@ async def delete_device(id: str):
         {"_id": ObjectId(device["project_id"])},
         {"$pull": {"devices": ObjectId(id)}},
     )
-    delete_charts_array(device["charts"])
-    delete_gauges_array(device["gauges"])
+    influx.switch_database(user_id)
+    influx.drop_measurement(id)
+    await delete_charts_array(device["charts"])
+    await delete_gauges_array(device["gauges"])
     devices_col.delete_one({"_id": ObjectId(id)})
     return {"message": f"Successfully deleted {id}"}
 
@@ -92,6 +104,20 @@ async def get_all_charts(id: str):
         chart_col.find({"_id": {"$in": device["charts"]}})
     )
     return device_charts
+
+
+@device_router.get("/{id}/getall/gauges", status_code=status.HTTP_200_OK)
+async def get_all_gauges(id: str):
+    device = devices_col.find_one({"_id": ObjectId(id)})
+    if not device:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Device with id {id} does not exist!",
+        )
+    device_gauges = gauge_list_serial(
+        gauge_col.find({"_id": {"$in": device["gauges"]}})
+    )
+    return device_gauges
 
 
 @device_router.get("/{user_id}/{id}/getall/fields", status_code=status.HTTP_200_OK)

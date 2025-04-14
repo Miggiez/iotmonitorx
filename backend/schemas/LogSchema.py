@@ -5,7 +5,8 @@ def log_individual_serial(logs):
         "l_type": logs["l_type"],
         "description": logs["description"],
         "level": logs["level"],
-        "user_id": logs["user_id"],
+        "created_at": logs["created_at"],
+        "updated_at": logs["updated_at"],
     }
 
 
