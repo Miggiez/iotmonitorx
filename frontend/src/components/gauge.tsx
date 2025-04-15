@@ -3,14 +3,14 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./ui/card"
 
 export default function Gauge({
 	title,
-	value = 0,
+	topic,
 	maxValue = 100,
 	minValue = 0,
 	type = "Humidity Sensor",
 	unit = "H%",
 }: {
 	title: string
-	value: number
+	topic: string
 	maxValue: number
 	minValue: number
 	type: string
@@ -45,7 +45,7 @@ export default function Gauge({
 					pointer={{ type: "blob", animationDelay: 0 }}
 					maxValue={maxValue}
 					minValue={minValue}
-					value={value}
+					// value={value}
 				/>
 			</CardContent>
 			<CardFooter className="text-center">{type}</CardFooter>

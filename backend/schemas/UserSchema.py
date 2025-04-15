@@ -1,5 +1,6 @@
 from bson import ObjectId
-from configurations import logs_col, project_col
+from configurations import devices_col, logs_col, project_col
+from schemas.DeviceSchema import device_list_serial
 from schemas.ProjectSchema import delete_devices_array
 
 
@@ -13,6 +14,25 @@ def user_individual_serial(users):
         "created_at": users["created_at"],
         "updated_at": users["updated_at"],
     }
+
+
+def get_project_device(projects: list[ObjectId]):
+    proj_list = []
+    for i in projects:
+        proj = project_col.find_one({"_id": i})
+        if proj:
+            proj_list.append(
+                {
+                    "id": str(proj["_id"]),
+                    "title": proj["title"],
+                    "devices": device_list_serial(
+                        devices_col.find({"_id": {"$in": proj["devices"]}})
+                    ),
+                    "created_at": proj["created_at"],
+                    "updated_at": proj["updated_at"],
+                }
+            )
+    return proj_list
 
 
 def user_list_serial(users) -> list:

@@ -1,4 +1,9 @@
-import { createFileRoute, Outlet } from "@tanstack/react-router"
+import {
+	createFileRoute,
+	Outlet,
+	redirect,
+	useNavigate,
+} from "@tanstack/react-router"
 import { AppSidebar } from "@/components/app-sidebar"
 import {
 	Breadcrumb,
@@ -15,7 +20,31 @@ import {
 	SidebarTrigger,
 } from "@/components/ui/sidebar"
 
+import axios from "axios"
+
 export const Route = createFileRoute("/dashboard")({
+	beforeLoad: async ({ context }) => {
+		let token = localStorage.getItem("token")
+		await axios({
+			method: "get",
+			url: `http://localhost:8000/auth/verif`,
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
+		})
+			.then((res) => {
+				context.authen.setUser({
+					userId: res.data.id,
+					username: res.data.username,
+					email: res.data.email,
+					role: res.data.role,
+				})
+			})
+			.catch((e) => {
+				console.log(e.message)
+				throw redirect({ to: "/" })
+			})
+	},
 	component: AppLayoutComponent,
 })
 

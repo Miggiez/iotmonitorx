@@ -1,15 +1,15 @@
 from datetime import datetime
 
 from bson import ObjectId
-from configurations import influx_connection, logs_col, project_col, user_col
+from configurations import influx_connection, logs_col, user_col
 from fastapi import APIRouter, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from models.UserModel import User
 from passlib.context import CryptContext
 from schemas.LogSchema import log_list_serial
-from schemas.ProjectSchema import project_list_serial
 from schemas.UserSchema import (
     delete_projects_array,
+    get_project_device,
     user_individual_serial,
     user_list_serial,
 )
@@ -76,8 +76,8 @@ async def update_user(user_id: str, user: User):
         username=user.username,
         email=user.email,
         password=hashed_password,
-        project=user.project,
-        logs=user.logs,
+        project=existing_user["projec"],
+        logs=existing_user["logs"],
         created_at=existing_user["created_at"],
         role=user.role,
         updated_at=datetime.now(),
@@ -132,5 +132,6 @@ async def get_projects(id: str):
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"User with id {id} does not exist!",
         )
-    projects = project_list_serial(project_col.find({"_id": {"$in": user["project"]}}))
+    # projects = project_list_serial(project_col.find({"_id": {"$in": user["project"]}}))
+    projects = get_project_device(user["project"])
     return projects

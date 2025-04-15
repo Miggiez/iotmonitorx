@@ -42,7 +42,7 @@ async def edit_project(id: str, projects: Project):
         )
     project = Project(
         title=projects.title,
-        devices=projects.devices,
+        devices=proj["devices"],
         user_id=projects.user_id,
         created_at=proj["created_at"],
         updated_at=datetime.now(),

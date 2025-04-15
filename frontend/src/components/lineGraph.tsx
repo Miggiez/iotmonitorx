@@ -7,28 +7,35 @@ import {
 	ChartTooltip,
 	ChartTooltipContent,
 } from "./ui/chart"
+import { ChartProps } from "@/types"
 
 export default function LineGraph({
 	title,
-	data,
-	configs = {},
-	dataKey = "",
+	configs = { name: "", color: "black" },
+	topic,
 }: {
 	title: string
-	data: Array<any>
-	configs: ChartConfig
-	dataKey: string
+	configs: { name: string; color: string }
+	topic: string
 }) {
+	const something = JSON.parse(
+		`"${configs.name}": {"label":"${configs.name}", color: "${configs.color}"}`
+	)
+	const config: ChartConfig = {
+		desktop: {
+			label: "desktop",
+			color: "black",
+		},
+	}
 	return (
 		<Card className="w-[600px]">
 			<CardHeader>
 				<CardTitle>{title}</CardTitle>
 			</CardHeader>
 			<CardContent>
-				<ChartContainer config={configs}>
+				<ChartContainer config={config}>
 					<LineChart
 						accessibilityLayer
-						data={data}
 						margin={{
 							left: 12,
 							right: 12,
@@ -44,13 +51,14 @@ export default function LineGraph({
 							tickFormatter={(value) => value.slice(0, 3)}
 						/>
 						<ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-						<Line
+						{something}
+						{/* <Line
 							dataKey={dataKey}
 							type="monotone"
 							stroke={`var(--color-${dataKey})`}
 							strokeWidth={2}
 							dot={false}
-						/>
+						/> */}
 					</LineChart>
 				</ChartContainer>
 			</CardContent>

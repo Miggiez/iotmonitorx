@@ -1,8 +1,22 @@
-import { FormProject } from "@/components/form-projects"
 import { LoginForm } from "@/components/login-form"
-import { createFileRoute } from "@tanstack/react-router"
+import { createFileRoute, redirect } from "@tanstack/react-router"
+import axios from "axios"
 
 export const Route = createFileRoute("/")({
+	beforeLoad: async () => {
+		let token = localStorage.getItem("token")
+		if (token) {
+			await axios({
+				method: "get",
+				url: `http://localhost:8000/auth/verif`,
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+			})
+				.then()
+				.catch(() => redirect({ to: "/" }))
+		}
+	},
 	component: RouteComponent,
 })
 

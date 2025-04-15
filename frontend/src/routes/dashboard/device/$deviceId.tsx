@@ -4,9 +4,11 @@ import LineGraph from "@/components/lineGraph"
 import { ShareJWT } from "@/components/share-jwt"
 import { ChartConfig } from "@/components/ui/chart"
 import { Separator } from "@/components/ui/separator"
+import { ChartProps, GaugeProps } from "@/types"
 import { createFileRoute } from "@tanstack/react-router"
+import axios from "axios"
 import { PlusCircle, Trash2 } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 export const Route = createFileRoute("/dashboard/device/$deviceId")({
 	component: RouteComponent,
@@ -35,6 +37,38 @@ function RouteComponent() {
 	// 	{ month: "May", temp: 209 },
 	// 	{ month: "June", temp: 214 },
 	// ]
+	const [charts, setCharts] = useState<ChartProps[]>([])
+
+	const [gauges, setGauges] = useState<GaugeProps[]>([])
+
+	const getCharts = async () => {
+		await axios({
+			method: "get",
+			url: `http://localhost:8000/devices/${deviceId}/getall/charts`,
+		})
+			.then((res) => {
+				console.log(res)
+				setCharts(res.data)
+			})
+			.catch((e) => console.log(e.message))
+	}
+
+	const getGauges = async () => {
+		await axios({
+			method: "get",
+			url: `http://localhost:8000/devices/${deviceId}/getall/gauges`,
+		})
+			.then((res) => {
+				console.log(res)
+				setCharts(res.data)
+			})
+			.catch((e) => console.log(e.message))
+	}
+
+	useEffect(() => {
+		getCharts()
+		getGauges()
+	}, [])
 
 	return (
 		<div>
@@ -49,45 +83,35 @@ function RouteComponent() {
 				</div>
 			</div>
 			<Separator className="mb-10" />
+
+			<div className="flex w-[100%] items-center py-3 mt-10">
+				<h1 className="text-2xl font-bold mb-3">Gauges</h1>
+			</div>
+			<Separator className="mb-10" />
 			<div className="flex flex-wrap justify-center space-x-10 space-y-4">
-				<Gauge
-					title="ESP32 Humidity"
-					value={10}
-					maxValue={100}
-					minValue={0}
-					type="Humidity Sensor"
-					unit="H%"
-				/>
-				<Gauge
-					title="ESP32 Temp C"
-					value={31}
-					maxValue={50}
-					type="Temperature Sensor C"
-					minValue={-10}
-					unit="°C"
-				/>
-				<Gauge
-					title="ESP32 Temp F"
-					value={80}
-					maxValue={122}
-					minValue={14}
-					type="Temperature Sensor F"
-					unit="°F"
-				/>
-				<Gauge
-					title="ESP32 Lux"
-					value={150}
-					maxValue={300}
-					minValue={-32}
-					type="Light Sensor"
-					unit="Lux"
-				/>
-				{/* <LineGraph
-					title="Lux and Temp"
-					data={chartData}
-					configs={configs}
-					dataKey={dataKey}
-				/> */}
+				{gauges.map((gauge) => (
+					<Gauge
+						title={gauge.title}
+						topic={gauge.topic}
+						maxValue={gauge.max_value}
+						minValue={gauge.min_value}
+						type={gauge.m_type}
+						unit={gauge.unit}
+					/>
+				))}
+			</div>
+			<div className="flex w-[100%] items-center py-3 mt-10">
+				<h1 className="text-2xl font-bold mb-3">Charts</h1>
+			</div>
+			<Separator className="mb-10" />
+			<div className="flex flex-wrap justify-center space-x-10 space-y-4">
+				{charts.map((chart) => (
+					<LineGraph
+						title={chart.title}
+						configs={chart.configs}
+						topic="something"
+					/>
+				))}
 			</div>
 		</div>
 	)

@@ -1,19 +1,21 @@
 from bson import ObjectId
 from configurations import devices_col
-from schemas.DeviceSchema import delete_charts_array, delete_gauges_array
+from schemas.DeviceSchema import (
+    delete_charts_array,
+    delete_gauges_array,
+)
+
+# def project_individual_serial(projects):
+#     return {
+#         "id": str(projects["_id"]),
+#         "title": projects["title"],
+#         "created_at": projects["created_at"],
+#         "updated_at": projects["updated_at"],
+#     }
 
 
-def project_individual_serial(projects):
-    return {
-        "id": str(projects["_id"]),
-        "title": projects["title"],
-        "created_at": projects["created_at"],
-        "updated_at": projects["updated_at"],
-    }
-
-
-def project_list_serial(projects) -> list:
-    return [project_individual_serial(project) for project in projects]
+# def project_list_serial(projects) -> list:
+#     return [project_individual_serial(project) for project in projects]
 
 
 async def delete_devices_array(devices: list[ObjectId]):

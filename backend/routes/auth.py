@@ -21,7 +21,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 # Pydantic model for login
 class LoginRequest(BaseModel):
-    username: str
+    email: str
     password: str
 
 
@@ -35,6 +35,7 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
+@auth_router.get("/verif/", status_code=status.HTTP_200_OK)
 async def get_current_user(token: str = Depends(oauth2_scheme)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -43,24 +44,31 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
     )
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username = payload.get("sub")
-        if username is None:
+        email = payload.get("sub")
+        if email is None:
             raise credentials_exception
     except JWTError:
         raise credentials_exception
 
-    user = user_col.find_one({"username": username})
+    user = user_col.find_one({"email": email})
     if user is None:
         raise credentials_exception
-    return user
+    return {
+        "id": str(user["_id"]),
+        "username": user["username"],
+        "role": user["role"],
+        "email": user["email"],
+    }
 
 
 # ------------------ Auth Routes ------------------ #
 @auth_router.post("/auth/login", status_code=status.HTTP_200_OK)
 def login_user(login_request: LoginRequest):
-    user = user_col.find_one({"username": login_request.username})
+    user = user_col.find_one({"email": login_request.email})
     if not user or not bcrypt_context.verify(login_request.password, user["password"]):
         raise HTTPException(status_code=401, detail="Invalid username or password")
-
-    access_token = create_access_token(data={"sub": user["username"]})
+    access_token = create_access_token(
+        data={"sub": user["email"]},
+        expires_delta=timedelta(minutes=20),
+    )
     return {"access_token": access_token, "token_type": "bearer"}
