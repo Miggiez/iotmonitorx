@@ -1,45 +1,53 @@
+import { authenticate } from "@/api/auth"
 import { FormGaugesCharts } from "@/components/form-gauges-charts"
 import Gauge from "@/components/gauge"
 import LineGraph from "@/components/lineGraph"
 import { ShareJWT } from "@/components/share-jwt"
 import { ChartConfig } from "@/components/ui/chart"
 import { Separator } from "@/components/ui/separator"
+import { useRefreshContext, useUserContext } from "@/store/generalContext"
 import { ChartProps, GaugeProps } from "@/types"
-import { createFileRoute } from "@tanstack/react-router"
+import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import axios from "axios"
-import { PlusCircle, Trash2 } from "lucide-react"
+import { Trash2 } from "lucide-react"
 import { useEffect, useState } from "react"
 
-export const Route = createFileRoute("/dashboard/device/$deviceId")({
+export const Route = createFileRoute("/dashboard/(device)/$deviceId")({
+	beforeLoad: async ({ context }) => ({
+		getUserId: async () => await authenticate({ context }),
+	}),
 	component: RouteComponent,
-	loader: () => {},
+	loader: async ({ context: { getUserId }, location }) => {
+		let deviceId = location.pathname.split("/").pop()
+		let userId = await getUserId()
+		const res = await axios({
+			method: "get",
+			url: `http://localhost:8000/devices/${userId}/${deviceId}/getall/fields`,
+		})
+		const res2 = await axios({
+			method: "get",
+			url: `http://localhost:8000/devices/get/${deviceId}`,
+		})
+		return {
+			fields: res.data,
+			userId: userId,
+			device: { id: res2.data.id, deviceName: res2.data.device_name },
+		}
+	},
 })
 
 function RouteComponent() {
 	const { deviceId } = Route.useParams()
-	// const [configs, setConfigs] = useState<ChartConfig>({
-	// 	temp: {
-	// 		label: "Temperature",
-	// 		color: "black",
-	// 	},
-	// 	hum: {
-	// 		label: "Humidity",
-	// 		color: "blue",
-	// 	},
-	// })
-	// const [dataKey, setDataKey] = useState<string>("temp")
-
-	// const chartData = [
-	// 	{ month: "January", temp: 186 },
-	// 	{ month: "February", temp: 305 },
-	// 	{ month: "March", temp: 237 },
-	// 	{ month: "April", temp: 73 },
-	// 	{ month: "May", temp: 209 },
-	// 	{ month: "June", temp: 214 },
-	// ]
 	const [charts, setCharts] = useState<ChartProps[]>([])
+	const fileds: string[] | null = Route.useLoaderData().fields
+	const userId: string = Route.useLoaderData().userId
+	const device: { id: string; deviceName: string } =
+		Route.useLoaderData().device
+	const { refresh, setRefresh } = useRefreshContext()
+	const navigate = useNavigate()
 
 	const [gauges, setGauges] = useState<GaugeProps[]>([])
+	const { user } = useUserContext()
 
 	const getCharts = async () => {
 		await axios({
@@ -47,7 +55,6 @@ function RouteComponent() {
 			url: `http://localhost:8000/devices/${deviceId}/getall/charts`,
 		})
 			.then((res) => {
-				console.log(res)
 				setCharts(res.data)
 			})
 			.catch((e) => console.log(e.message))
@@ -59,25 +66,45 @@ function RouteComponent() {
 			url: `http://localhost:8000/devices/${deviceId}/getall/gauges`,
 		})
 			.then((res) => {
-				console.log(res)
-				setCharts(res.data)
+				setGauges(res.data)
 			})
 			.catch((e) => console.log(e.message))
+	}
+
+	const deleteDevice = async (e: React.MouseEvent<HTMLDivElement>) => {
+		e.preventDefault()
+		await axios({
+			method: "delete",
+			url: `http://localhost:8000/devices/delete/${deviceId}/${userId}`,
+		})
+			.then((res) => {
+				setRefresh(!refresh)
+				navigate({ to: "/dashboard" })
+			})
+			.catch((e) => console.log(e))
 	}
 
 	useEffect(() => {
 		getCharts()
 		getGauges()
-	}, [])
+	}, [refresh])
 
 	return (
 		<div>
 			<div className="flex w-[100%] items-center py-3">
-				<h1 className="text-2xl font-bold mb-3">Device {deviceId}</h1>
+				<div className="flex flex-col">
+					<h1 className="text-2xl font-bold mb-1">
+						Device: {device.deviceName}
+					</h1>
+					<h1 className="text-l mb-3">ID: {deviceId}</h1>
+				</div>
 				<div className="flex gap-6 justify-center items-center ml-auto">
-					<ShareJWT />
-					<FormGaugesCharts />
-					<div className="cursor-pointer hover:shadow-2xl p-1 hover:border-2 hover:rounded-[5px]">
+					<ShareJWT deviceId={deviceId} userId={user.userId} />
+					<FormGaugesCharts deviceId={deviceId} fields={fileds} />
+					<div
+						onClick={deleteDevice}
+						className="cursor-pointer hover:shadow-2xl p-1 hover:border-2 hover:rounded-[5px]"
+					>
 						<Trash2 className="text-red-400" />
 					</div>
 				</div>

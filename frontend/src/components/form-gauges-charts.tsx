@@ -19,35 +19,46 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "./ui/select"
+import axios from "axios"
 
 interface GaugeProps {
 	topic: string
 	title: string
-	maxValue: number
-	minValue: number
-	mType: string
+	max_value: number
+	min_value: number
+	m_type: string
 	unit: string
 }
 
 interface ChartProps {
 	title: string
 	topic: string
+	labelName: string
+	name: string
 	color: string
 }
 
-export function FormGaugesCharts() {
+export function FormGaugesCharts({
+	deviceId,
+	fields,
+}: {
+	deviceId: string
+	fields: string[] | null
+}) {
 	const [formGauges, setFormGauges] = useState<GaugeProps>({
 		topic: "",
 		title: "",
-		maxValue: 100.0,
-		minValue: 0.0,
-		mType: "",
+		max_value: 100.0,
+		min_value: 0.0,
+		m_type: "",
 		unit: "",
 	})
 
 	const [formCharts, setFormCharts] = useState<ChartProps>({
 		title: "",
 		topic: "",
+		labelName: "",
+		name: "",
 		color: "black",
 	})
 
@@ -63,38 +74,48 @@ export function FormGaugesCharts() {
 		setFormCharts({ ...formCharts, [name]: value })
 	}
 
-	const handleReset = (e: React.MouseEvent<HTMLButtonElement>) => {
-		e.preventDefault()
+	const handleReset = () => {
 		setFormGauges({
 			topic: "",
 			title: "",
-			maxValue: 100.0,
-			minValue: 0.0,
-			mType: "",
+			max_value: 100.0,
+			min_value: 0.0,
+			m_type: "",
 			unit: "",
 		})
 		setFormCharts({
 			title: "",
 			topic: "",
+			labelName: "",
+			name: "",
 			color: "black",
 		})
 	}
 
-	const handleSubmit = (e: React.MouseEvent<HTMLButtonElement>) => {
+	const handleSubmitGauge = async (e: React.MouseEvent<HTMLButtonElement>) => {
 		e.preventDefault()
-		setFormGauges({
-			topic: "",
-			title: "",
-			maxValue: 100.0,
-			minValue: 0.0,
-			mType: "",
-			unit: "",
+		await axios({
+			method: "post",
+			url: `http://localhost:8000/gauges/create`,
+			data: {
+				topic: formGauges.topic,
+				title: formGauges.title,
+				max_value: formGauges.max_value,
+				min_value: formGauges.min_value,
+				m_type: formGauges.m_type,
+				unit: formGauges.unit,
+				device_id: deviceId,
+			},
 		})
-		setFormCharts({
-			title: "",
-			topic: "",
-			color: "black",
-		})
+			.then((res) => console.log(res.data))
+			.catch((e) => console.log(e))
+		handleReset()
+	}
+
+	const handleSubmitChart = async (e: React.MouseEvent<HTMLButtonElement>) => {
+		e.preventDefault()
+
+		handleReset()
 	}
 
 	const Gauges = () => {
@@ -109,18 +130,32 @@ export function FormGaugesCharts() {
 						value={formGauges.title}
 						name="title"
 						className="col-span-3"
+						required
 					/>
 				</div>
 				<div className="grid grid-cols-4 items-center gap-4">
-					<Label htmlFor="topic" className="text-right">
-						Topic
-					</Label>
-					<Input
-						onChange={handleFormGaugeChange}
+					<Label>Topic</Label>
+					<Select
+						onValueChange={(topic) => {
+							setFormGauges({
+								...formGauges,
+								topic: topic,
+							})
+						}}
 						value={formGauges.topic}
-						name="topic"
-						className="col-span-3"
-					/>
+					>
+						<SelectTrigger id="topic">
+							<SelectValue placeholder="Select" />
+						</SelectTrigger>
+						<SelectContent position="popper">
+							{fields &&
+								fields.map((field, index) => (
+									<SelectItem key={index} value={field}>
+										{field}
+									</SelectItem>
+								))}
+						</SelectContent>
+					</Select>
 				</div>
 				<div className="grid grid-cols-4 items-center gap-4">
 					<Label htmlFor="mType" className="text-right">
@@ -128,9 +163,10 @@ export function FormGaugesCharts() {
 					</Label>
 					<Input
 						onChange={handleFormGaugeChange}
-						value={formGauges.mType}
+						value={formGauges.m_type}
 						name="mType"
 						className="col-span-3"
+						required
 					/>
 				</div>
 				<div className="grid grid-cols-4 items-center gap-4">
@@ -139,10 +175,11 @@ export function FormGaugesCharts() {
 					</Label>
 					<Input
 						onChange={handleFormGaugeChange}
-						value={formGauges.maxValue}
+						value={formGauges.max_value}
 						name="maxValue"
 						type="number"
 						className="col-span-3"
+						required
 					/>
 				</div>
 				<div className="grid grid-cols-4 items-center gap-4">
@@ -151,10 +188,11 @@ export function FormGaugesCharts() {
 					</Label>
 					<Input
 						onChange={handleFormGaugeChange}
-						value={formGauges.minValue}
+						value={formGauges.min_value}
 						name="minValue"
 						type="number"
 						className="col-span-3"
+						required
 					/>
 				</div>
 				<div className="grid grid-cols-4 items-center gap-4">
@@ -166,6 +204,7 @@ export function FormGaugesCharts() {
 						value={formGauges.unit}
 						name="unit"
 						className="col-span-3"
+						required
 					/>
 				</div>
 			</div>
@@ -184,24 +223,53 @@ export function FormGaugesCharts() {
 						name="title"
 						value={formCharts.title}
 						className="col-span-3"
+						required
 					/>
 				</div>
 				<div className="grid grid-cols-4 items-center gap-4">
-					<Label htmlFor="topic" className="text-right">
-						Topic
+					<Label htmlFor="labelName" className="text-right">
+						Label Name
 					</Label>
 					<Input
 						onChange={handleFormChartChange}
-						name="topic"
-						value={formCharts.topic}
+						name="labelName"
+						value={formCharts.labelName}
 						className="col-span-3"
+						required
 					/>
+				</div>
+				<div className="grid grid-cols-4 items-center gap-4">
+					<Label>Topic</Label>
+					<Select
+						onValueChange={(topic) => {
+							setFormCharts({
+								...formCharts,
+								topic: topic,
+							})
+						}}
+						value={formCharts.topic}
+					>
+						<SelectTrigger id="topic">
+							<SelectValue placeholder="Select" />
+						</SelectTrigger>
+						<SelectContent position="popper">
+							{fields &&
+								fields.map((field, index) => (
+									<SelectItem key={index} value={field}>
+										{field}
+									</SelectItem>
+								))}
+						</SelectContent>
+					</Select>
 				</div>
 				<div className="grid grid-cols-4 items-center gap-4">
 					<Label>Color</Label>
 					<Select
-						onValueChange={(value) => {
-							setFormCharts({ ...formCharts, color: value })
+						onValueChange={(color) => {
+							setFormCharts({
+								...formCharts,
+								color: color,
+							})
 						}}
 						value={formCharts.color}
 					>
@@ -235,7 +303,7 @@ export function FormGaugesCharts() {
 					</DialogDescription>
 				</DialogHeader>
 				<div className="flex flex-col space-y-1.5">
-					<Label htmlFor="framework">Selection</Label>
+					<Label>Selection</Label>
 					<Select
 						onValueChange={(value) => {
 							setSelection(value)
@@ -253,20 +321,23 @@ export function FormGaugesCharts() {
 				</div>
 				{selection === "gauge" ? Gauges() : Charts()}
 				<DialogFooter>
-					<Button
-						type="button"
-						onClick={handleReset}
-						className="cursor-pointer"
-					>
-						Clear
-					</Button>
-					<Button
-						type="submit"
-						onClick={handleSubmit}
-						className="cursor-pointer"
-					>
-						{selection === "gauge" ? "Create new Guage" : "Create new Chart"}
-					</Button>
+					{selection === "gauge" ? (
+						<Button
+							type="submit"
+							onClick={handleSubmitGauge}
+							className="cursor-pointer"
+						>
+							Create new Gauge
+						</Button>
+					) : (
+						<Button
+							type="submit"
+							onClick={handleSubmitChart}
+							className="cursor-pointer"
+						>
+							Create new Chart
+						</Button>
+					)}
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>

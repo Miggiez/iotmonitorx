@@ -8,7 +8,7 @@ from models.UserModel import GaugeMeasurements
 gauge_router = APIRouter(prefix="/gauges", tags=["gauges"])
 
 
-@gauge_router.post("/gauge/create", status_code=status.HTTP_201_CREATED)
+@gauge_router.post("/create", status_code=status.HTTP_201_CREATED)
 async def create_chart(gauges: GaugeMeasurements):
     device = devices_col.find_one({"_id": ObjectId(gauges.device_id)})
     if device is None:
@@ -36,7 +36,7 @@ async def create_chart(gauges: GaugeMeasurements):
     return {"message": f"Created Gauge {gauge.title} Successfully!"}
 
 
-@gauge_router.put("/gauge/edit/{id}", status_code=status.HTTP_202_ACCEPTED)
+@gauge_router.put("/edit/{id}", status_code=status.HTTP_202_ACCEPTED)
 async def edit_chart(id: str, gauges: GaugeMeasurements):
     ga = gauge_col.find_one({"_id": ObjectId(id)})
     if ga is None:
@@ -60,7 +60,7 @@ async def edit_chart(id: str, gauges: GaugeMeasurements):
     return {"message": f"Successfully edited Gauge {id}"}
 
 
-@gauge_router.delete("/gauge/delete/{id}", status_code=status.HTTP_200_OK)
+@gauge_router.delete("/delete/{id}", status_code=status.HTTP_200_OK)
 async def delete_chart(id: str):
     gauge = gauge_col.find_one({"_id": ObjectId(id)})
     if gauge is None:

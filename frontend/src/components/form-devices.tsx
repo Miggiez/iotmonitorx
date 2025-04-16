@@ -11,11 +11,13 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useRefreshContext } from "@/store/generalContext"
+import { useNavigate } from "@tanstack/react-router"
 import axios from "axios"
 import { PlusCircle } from "lucide-react"
 import { useState } from "react"
 
 export function FormDevices({ projectId }: { projectId: string }) {
+	const navigate = useNavigate()
 	const [deviceName, setDeviceName] = useState<string>("")
 	const [open, setOpen] = useState<boolean>(false)
 	const { refresh, setRefresh } = useRefreshContext()
@@ -26,20 +28,26 @@ export function FormDevices({ projectId }: { projectId: string }) {
 
 	const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
 		e.preventDefault()
-		await axios({
-			method: "post",
-			url: "http://localhost:8000/devices/create/device",
-			data: {
-				device_name: deviceName,
-				project_id: projectId,
-			},
-		})
-			.then((res) => console.log(res.data))
-			.catch((e) => console.log(e.message))
-
-		setDeviceName("")
-		setRefresh(!refresh)
-		setOpen(false)
+		if (deviceName !== "") {
+			await axios({
+				method: "post",
+				url: "http://localhost:8000/devices/create/device",
+				data: {
+					device_name: deviceName,
+					project_id: projectId,
+				},
+			})
+				.then((res) => {
+					setDeviceName("")
+					setRefresh(!refresh)
+					navigate({
+						to: "/dashboard/$deviceId",
+						params: { deviceId: res.data.id },
+					})
+					setOpen(false)
+				})
+				.catch((e) => console.log(e.message))
+		}
 	}
 
 	return (

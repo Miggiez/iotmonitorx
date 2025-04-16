@@ -13,7 +13,7 @@ import { Eye, EyeClosed } from "lucide-react"
 import { Suspense, useEffect, useState } from "react"
 import { LoginProps } from "@/types"
 import axios from "axios"
-import { useNavigate } from "@tanstack/react-router"
+import { redirect, useNavigate } from "@tanstack/react-router"
 
 export function LoginForm({
 	className,
@@ -47,7 +47,28 @@ export function LoginForm({
 			.catch((e) => console.log(e.message))
 	}
 
-	useEffect(() => {}, [])
+	const verifyUser = async () => {
+		let token = localStorage.getItem("token")
+		await axios({
+			method: "get",
+			url: `http://localhost:8000/auth/verif`,
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
+		})
+			.then(() => {
+				navigate({ to: "/dashboard" })
+			})
+			.catch((e) => {
+				console.log(e.message)
+				throw redirect({ to: "/" })
+			})
+	}
+
+	useEffect(() => {
+		verifyUser()
+	}, [])
+
 	return (
 		<div className={cn("flex flex-col gap-6", className)} {...props}>
 			<Suspense>

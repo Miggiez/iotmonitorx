@@ -13,8 +13,15 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useState } from "react"
 
-export function ShareJWT() {
+export function ShareJWT({
+	deviceId,
+	userId,
+}: {
+	deviceId: string
+	userId: string
+}) {
 	return (
 		<Dialog>
 			<DialogTrigger className="cursor-pointer hover:shadow-2xl p-1 hover:border-2 hover:rounded-[5px]">
@@ -22,34 +29,29 @@ export function ShareJWT() {
 			</DialogTrigger>
 			<DialogContent className="sm:max-w-md">
 				<DialogHeader>
-					<DialogTitle>Share JWT</DialogTitle>
+					<DialogTitle>Connect Devices</DialogTitle>
 					<DialogDescription>
-						A device with this can publish through MQTT
+						Connect your devices with the IOT platform
 					</DialogDescription>
 				</DialogHeader>
 				<div className="flex items-center space-x-2">
 					<div className="grid flex-1 gap-2">
-						<Label htmlFor="link" className="sr-only">
-							JWT Token
-						</Label>
-						<Input
-							id="link"
-							defaultValue="https://ui.shadcn.com/docs/installation"
-							readOnly
-						/>
+						<Label>UserId and DeviceId</Label>
+						<Input defaultValue={`/${userId}/${deviceId}`} readOnly />
 					</div>
-					<Button type="submit" size="sm" className="px-3">
+					<Button
+						type="button"
+						onClick={(e) => {
+							e.preventDefault()
+							navigator.clipboard.writeText(`/${userId}/${deviceId}`)
+						}}
+						size="sm"
+						className="px-3"
+					>
 						<span className="sr-only">Copy</span>
 						<Copy />
 					</Button>
 				</div>
-				<DialogFooter className="sm:justify-start">
-					<DialogClose>
-						<Button type="button" variant="secondary">
-							Close
-						</Button>
-					</DialogClose>
-				</DialogFooter>
 			</DialogContent>
 		</Dialog>
 	)

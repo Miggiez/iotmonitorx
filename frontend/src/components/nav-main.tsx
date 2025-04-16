@@ -60,15 +60,7 @@ export function NavMain({ userId }: { userId: string }) {
 		<>
 			<SidebarGroup>
 				<SidebarGroupLabel>
-					<div className="flex items-center w-[100%]">
-						Projects
-						{/* <div
-							onClick={() => setRefBut(!refBut)}
-							className="ml-auto inline-block cursor-pointer"
-						>
-							<RefreshCw className="w-4" />
-						</div> */}
-					</div>
+					<div className="flex items-center w-[100%]">Projects</div>
 				</SidebarGroupLabel>
 				<SidebarMenu>
 					<SidebarMenuItem>
@@ -95,7 +87,7 @@ export function NavMain({ userId }: { userId: string }) {
 												<SidebarMenuSubItem key={device.id}>
 													<SidebarMenuSubButton asChild>
 														<Link
-															to="/dashboard/device/$deviceId"
+															to="/dashboard/$deviceId"
 															params={{ deviceId: device.id }}
 														>
 															{device.device_name}

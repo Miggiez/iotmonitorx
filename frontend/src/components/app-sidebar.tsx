@@ -14,22 +14,19 @@ import { RefreshContext, useUserContext } from "@/store/generalContext"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 	const { user } = useUserContext()
-	const [refBut, setRefBut] = useState<boolean>(false)
 	const userId = user.userId
 	const userName = user.username
 	const email = user.email
 
 	return (
-		<RefreshContext.Provider value={{ refresh: refBut, setRefresh: setRefBut }}>
-			<Sidebar collapsible="icon" {...props}>
-				<SidebarHeader>
-					<NavUser user={{ name: userName, email: email, avatar: "" }} />
-				</SidebarHeader>
-				<SidebarContent>
-					<NavMain userId={userId} />
-				</SidebarContent>
-				<SidebarRail />
-			</Sidebar>
-		</RefreshContext.Provider>
+		<Sidebar collapsible="icon" {...props}>
+			<SidebarHeader>
+				<NavUser user={{ name: userName, email: email, avatar: "" }} />
+			</SidebarHeader>
+			<SidebarContent>
+				<NavMain userId={userId} />
+			</SidebarContent>
+			<SidebarRail />
+		</Sidebar>
 	)
 }

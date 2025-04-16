@@ -35,7 +35,7 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
-@auth_router.get("/verif/", status_code=status.HTTP_200_OK)
+@auth_router.get("/verif", status_code=status.HTTP_200_OK)
 async def get_current_user(token: str = Depends(oauth2_scheme)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,

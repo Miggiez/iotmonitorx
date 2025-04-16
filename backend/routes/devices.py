@@ -14,7 +14,11 @@ from fastapi import APIRouter, HTTPException, status
 from models.UserModel import Devices
 from pydantic import BaseModel
 from schemas.ChartSchema import chart_list_serial
-from schemas.DeviceSchema import delete_charts_array, delete_gauges_array
+from schemas.DeviceSchema import (
+    delete_charts_array,
+    delete_gauges_array,
+    device_individual_serial,
+)
 from schemas.GaugeSchema import gauge_list_serial
 
 device_router = APIRouter(prefix="/devices", tags=["devices"])
@@ -48,7 +52,23 @@ async def post_device(devices: Devices):
     project_col.find_one_and_update(
         {"_id": ObjectId(device.project_id)}, {"$push": {"devices": id}}
     )
-    return {"message": f"Created Device {device.device_name}  Successfully!"}
+    return {
+        "message": f"Created Device {device.device_name}  Successfully!",
+        "id": str(id),
+    }
+
+
+@device_router.get("/get/{id}", status_code=status.HTTP_201_CREATED)
+async def get_device(id: str):
+    print(id)
+    device = devices_col.find_one({"_id": ObjectId(id)})
+    if not device:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Device with this id: {id} is not found",
+        )
+
+    return device_individual_serial(device)
 
 
 @device_router.put("/edit/{id}", status_code=status.HTTP_200_OK)
@@ -63,7 +83,7 @@ async def edit_device(id: str, devices: Devices):
         device_name=devices.device_name,
         charts=dev["charts"],
         gauges=dev["gauges"],
-        project_id=devices.project_id,
+        project_id=dev["project_id"],
         created_at=datetime.now(),
         updated_at=datetime.now(),
     )
@@ -71,7 +91,7 @@ async def edit_device(id: str, devices: Devices):
     return {"message": f"Successfully edited {id}"}
 
 
-@device_router.delete("/delete/device/{id}/{user_id}", status_code=status.HTTP_200_OK)
+@device_router.delete("/delete/{id}/{user_id}", status_code=status.HTTP_200_OK)
 async def delete_device(id: str, user_id: str):
     influx = influx_connection()
     device = devices_col.find_one({"_id": ObjectId(id)})
@@ -139,10 +159,11 @@ async def get_all_fields(id: str, user_id: str):
     measurements = list(
         *influx.query(f'select * from "{id}" group by * order by desc limit 1;')
     )
-    fields = measurements[0]
-    field_list = [*fields.keys()]
-    field_list.pop(0)
-    return field_list
+    if measurements:
+        fields = measurements[0]
+        field_list = [*fields.keys()]
+        field_list.pop(0)
+        return field_list
 
 
 @device_router.get("/{user_id}/{id}/chart/{field}/{time}")

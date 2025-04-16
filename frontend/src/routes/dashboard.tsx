@@ -1,64 +1,36 @@
-import {
-	createFileRoute,
-	Outlet,
-	redirect,
-	useNavigate,
-} from "@tanstack/react-router"
+import { createFileRoute, Outlet } from "@tanstack/react-router"
 import { AppSidebar } from "@/components/app-sidebar"
-import {
-	Breadcrumb,
-	BreadcrumbItem,
-	BreadcrumbLink,
-	BreadcrumbList,
-	BreadcrumbPage,
-	BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
+import { Breadcrumb } from "@/components/ui/breadcrumb"
 import { Separator } from "@/components/ui/separator"
 import {
 	SidebarInset,
 	SidebarProvider,
 	SidebarTrigger,
 } from "@/components/ui/sidebar"
-
-import axios from "axios"
+import { authenticate } from "@/api/auth"
+import { RefreshContext, useRefreshContext } from "@/store/generalContext"
+import { useState } from "react"
 
 export const Route = createFileRoute("/dashboard")({
 	beforeLoad: async ({ context }) => {
-		let token = localStorage.getItem("token")
-		await axios({
-			method: "get",
-			url: `http://localhost:8000/auth/verif`,
-			headers: {
-				Authorization: `Bearer ${token}`,
-			},
-		})
-			.then((res) => {
-				context.authen.setUser({
-					userId: res.data.id,
-					username: res.data.username,
-					email: res.data.email,
-					role: res.data.role,
-				})
-			})
-			.catch((e) => {
-				console.log(e.message)
-				throw redirect({ to: "/" })
-			})
+		await authenticate({ context })
 	},
 	component: AppLayoutComponent,
 })
 
 function AppLayoutComponent() {
+	const [refBut, setRefBut] = useState<boolean>(false)
 	return (
-		<SidebarProvider>
-			<AppSidebar />
-			<SidebarInset>
-				<header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
-					<div className="flex items-center gap-2 px-4">
-						<SidebarTrigger className="-ml-1" />
-						<Separator orientation="vertical" className="mr-2 h-4" />
-						<Breadcrumb>
-							{/* <BreadcrumbList>
+		<RefreshContext.Provider value={{ refresh: refBut, setRefresh: setRefBut }}>
+			<SidebarProvider>
+				<AppSidebar />
+				<SidebarInset>
+					<header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+						<div className="flex items-center gap-2 px-4">
+							<SidebarTrigger className="-ml-1" />
+							<Separator orientation="vertical" className="mr-2 h-4" />
+							<Breadcrumb>
+								{/* <BreadcrumbList>
 								<BreadcrumbItem className="hidden md:block">
 									<BreadcrumbLink>
 										<Link className="black" to=".">
@@ -71,13 +43,14 @@ function AppLayoutComponent() {
 									<BreadcrumbPage>Data Fetching</BreadcrumbPage>
 								</BreadcrumbItem>
 							</BreadcrumbList> */}
-						</Breadcrumb>
+							</Breadcrumb>
+						</div>
+					</header>
+					<div className="flex flex-col w-[100%] h-[100%] p-4">
+						<Outlet />
 					</div>
-				</header>
-				<div className="flex flex-col w-[100%] h-[100%] p-4">
-					<Outlet />
-				</div>
-			</SidebarInset>
-		</SidebarProvider>
+				</SidebarInset>
+			</SidebarProvider>
+		</RefreshContext.Provider>
 	)
 }
