@@ -20,6 +20,7 @@ import {
 	SelectValue,
 } from "./ui/select"
 import axios from "axios"
+import { useRefreshContext } from "@/store/generalContext"
 
 interface GaugeProps {
 	topic: string
@@ -45,6 +46,7 @@ export function FormGaugesCharts({
 	deviceId: string
 	fields: string[] | null
 }) {
+	const { refresh, setRefresh } = useRefreshContext()
 	const [formGauges, setFormGauges] = useState<GaugeProps>({
 		topic: "",
 		title: "",
@@ -63,6 +65,7 @@ export function FormGaugesCharts({
 	})
 
 	const [selection, setSelection] = useState<string>("gauge")
+	const [open, setOpen] = useState<boolean>(false)
 
 	const handleFormGaugeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const { name, value } = e.target
@@ -109,6 +112,8 @@ export function FormGaugesCharts({
 		})
 			.then((res) => console.log(res.data))
 			.catch((e) => console.log(e))
+		setRefresh(!refresh)
+		setOpen(false)
 		handleReset()
 	}
 
@@ -164,7 +169,7 @@ export function FormGaugesCharts({
 					<Input
 						onChange={handleFormGaugeChange}
 						value={formGauges.m_type}
-						name="mType"
+						name="m_type"
 						className="col-span-3"
 						required
 					/>
@@ -176,7 +181,7 @@ export function FormGaugesCharts({
 					<Input
 						onChange={handleFormGaugeChange}
 						value={formGauges.max_value}
-						name="maxValue"
+						name="max_value"
 						type="number"
 						className="col-span-3"
 						required
@@ -189,7 +194,7 @@ export function FormGaugesCharts({
 					<Input
 						onChange={handleFormGaugeChange}
 						value={formGauges.min_value}
-						name="minValue"
+						name="min_value"
 						type="number"
 						className="col-span-3"
 						required
@@ -291,7 +296,7 @@ export function FormGaugesCharts({
 	}
 
 	return (
-		<Dialog>
+		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger className="cursor-pointer hover:shadow-2xl p-1 hover:border-2 hover:rounded-[5px]">
 				<PlusCircle className="text-green-400" />
 			</DialogTrigger>

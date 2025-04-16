@@ -13,7 +13,7 @@
 import { Route as rootRoute } from './routes/__root'
 import { Route as DashboardImport } from './routes/dashboard'
 import { Route as IndexImport } from './routes/index'
-import { Route as DashboarddeviceDeviceIdImport } from './routes/dashboard/(device)/$deviceId'
+import { Route as DashboardDeviceIdImport } from './routes/dashboard/$deviceId'
 
 // Create/Update Routes
 
@@ -29,8 +29,8 @@ const IndexRoute = IndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const DashboarddeviceDeviceIdRoute = DashboarddeviceDeviceIdImport.update({
-  id: '/(device)/$deviceId',
+const DashboardDeviceIdRoute = DashboardDeviceIdImport.update({
+  id: '/$deviceId',
   path: '/$deviceId',
   getParentRoute: () => DashboardRoute,
 } as any)
@@ -53,11 +53,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardImport
       parentRoute: typeof rootRoute
     }
-    '/dashboard/(device)/$deviceId': {
-      id: '/dashboard/(device)/$deviceId'
+    '/dashboard/$deviceId': {
+      id: '/dashboard/$deviceId'
       path: '/$deviceId'
       fullPath: '/dashboard/$deviceId'
-      preLoaderRoute: typeof DashboarddeviceDeviceIdImport
+      preLoaderRoute: typeof DashboardDeviceIdImport
       parentRoute: typeof DashboardImport
     }
   }
@@ -66,11 +66,11 @@ declare module '@tanstack/react-router' {
 // Create and export the route tree
 
 interface DashboardRouteChildren {
-  DashboarddeviceDeviceIdRoute: typeof DashboarddeviceDeviceIdRoute
+  DashboardDeviceIdRoute: typeof DashboardDeviceIdRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
-  DashboarddeviceDeviceIdRoute: DashboarddeviceDeviceIdRoute,
+  DashboardDeviceIdRoute: DashboardDeviceIdRoute,
 }
 
 const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
@@ -80,20 +80,20 @@ const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRouteWithChildren
-  '/dashboard/$deviceId': typeof DashboarddeviceDeviceIdRoute
+  '/dashboard/$deviceId': typeof DashboardDeviceIdRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRouteWithChildren
-  '/dashboard/$deviceId': typeof DashboarddeviceDeviceIdRoute
+  '/dashboard/$deviceId': typeof DashboardDeviceIdRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRouteWithChildren
-  '/dashboard/(device)/$deviceId': typeof DashboarddeviceDeviceIdRoute
+  '/dashboard/$deviceId': typeof DashboardDeviceIdRoute
 }
 
 export interface FileRouteTypes {
@@ -101,7 +101,7 @@ export interface FileRouteTypes {
   fullPaths: '/' | '/dashboard' | '/dashboard/$deviceId'
   fileRoutesByTo: FileRoutesByTo
   to: '/' | '/dashboard' | '/dashboard/$deviceId'
-  id: '__root__' | '/' | '/dashboard' | '/dashboard/(device)/$deviceId'
+  id: '__root__' | '/' | '/dashboard' | '/dashboard/$deviceId'
   fileRoutesById: FileRoutesById
 }
 
@@ -135,11 +135,11 @@ export const routeTree = rootRoute
     "/dashboard": {
       "filePath": "dashboard.tsx",
       "children": [
-        "/dashboard/(device)/$deviceId"
+        "/dashboard/$deviceId"
       ]
     },
-    "/dashboard/(device)/$deviceId": {
-      "filePath": "dashboard/(device)/$deviceId.tsx",
+    "/dashboard/$deviceId": {
+      "filePath": "dashboard/$deviceId.tsx",
       "parent": "/dashboard"
     }
   }

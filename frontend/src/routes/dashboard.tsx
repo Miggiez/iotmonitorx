@@ -8,7 +8,7 @@ import {
 	SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { authenticate } from "@/api/auth"
-import { RefreshContext, useRefreshContext } from "@/store/generalContext"
+import { RefreshContext } from "@/store/generalContext"
 import { useState } from "react"
 
 export const Route = createFileRoute("/dashboard")({

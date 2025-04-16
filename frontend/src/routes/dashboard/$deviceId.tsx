@@ -2,6 +2,7 @@ import { authenticate } from "@/api/auth"
 import { FormGaugesCharts } from "@/components/form-gauges-charts"
 import Gauge from "@/components/gauge"
 import LineGraph from "@/components/lineGraph"
+import { ListGauge } from "@/components/list-gauge"
 import { ShareJWT } from "@/components/share-jwt"
 import { ChartConfig } from "@/components/ui/chart"
 import { Separator } from "@/components/ui/separator"
@@ -12,7 +13,7 @@ import axios from "axios"
 import { Trash2 } from "lucide-react"
 import { useEffect, useState } from "react"
 
-export const Route = createFileRoute("/dashboard/(device)/$deviceId")({
+export const Route = createFileRoute("/dashboard/$deviceId")({
 	beforeLoad: async ({ context }) => ({
 		getUserId: async () => await authenticate({ context }),
 	}),
@@ -46,9 +47,6 @@ function RouteComponent() {
 	const { refresh, setRefresh } = useRefreshContext()
 	const navigate = useNavigate()
 
-	const [gauges, setGauges] = useState<GaugeProps[]>([])
-	const { user } = useUserContext()
-
 	const getCharts = async () => {
 		await axios({
 			method: "get",
@@ -60,34 +58,18 @@ function RouteComponent() {
 			.catch((e) => console.log(e.message))
 	}
 
-	const getGauges = async () => {
-		await axios({
-			method: "get",
-			url: `http://localhost:8000/devices/${deviceId}/getall/gauges`,
-		})
-			.then((res) => {
-				setGauges(res.data)
-			})
-			.catch((e) => console.log(e.message))
-	}
-
 	const deleteDevice = async (e: React.MouseEvent<HTMLDivElement>) => {
 		e.preventDefault()
 		await axios({
 			method: "delete",
 			url: `http://localhost:8000/devices/delete/${deviceId}/${userId}`,
 		})
-			.then((res) => {
+			.then(() => {
 				setRefresh(!refresh)
 				navigate({ to: "/dashboard" })
 			})
 			.catch((e) => console.log(e))
 	}
-
-	useEffect(() => {
-		getCharts()
-		getGauges()
-	}, [refresh])
 
 	return (
 		<div>
@@ -99,7 +81,7 @@ function RouteComponent() {
 					<h1 className="text-l mb-3">ID: {deviceId}</h1>
 				</div>
 				<div className="flex gap-6 justify-center items-center ml-auto">
-					<ShareJWT deviceId={deviceId} userId={user.userId} />
+					<ShareJWT deviceId={deviceId} userId={userId} />
 					<FormGaugesCharts deviceId={deviceId} fields={fileds} />
 					<div
 						onClick={deleteDevice}
@@ -115,30 +97,19 @@ function RouteComponent() {
 				<h1 className="text-2xl font-bold mb-3">Gauges</h1>
 			</div>
 			<Separator className="mb-10" />
-			<div className="flex flex-wrap justify-center space-x-10 space-y-4">
-				{gauges.map((gauge) => (
-					<Gauge
-						title={gauge.title}
-						topic={gauge.topic}
-						maxValue={gauge.max_value}
-						minValue={gauge.min_value}
-						type={gauge.m_type}
-						unit={gauge.unit}
-					/>
-				))}
-			</div>
+			<ListGauge deviceId={deviceId} refresh={refresh} userId={userId} />
 			<div className="flex w-[100%] items-center py-3 mt-10">
 				<h1 className="text-2xl font-bold mb-3">Charts</h1>
 			</div>
 			<Separator className="mb-10" />
 			<div className="flex flex-wrap justify-center space-x-10 space-y-4">
-				{charts.map((chart) => (
+				{/* {charts.map((chart) => (
 					<LineGraph
 						title={chart.title}
 						configs={chart.configs}
 						topic="something"
 					/>
-				))}
+				))} */}
 			</div>
 		</div>
 	)
