@@ -20,7 +20,8 @@ class GaugeMeasurements(BaseModel):
 class ChartMeasurement(BaseModel):
     title: str
     topic: str
-    configs: object
+    name: str
+    color: str
     device_id: str
     updated_at: datetime = None
     created_at: datetime = None
@@ -30,7 +31,16 @@ class Devices(BaseModel):
     device_name: str
     charts: list[Any] = []
     gauges: list[Any] = []
+    switches: list[Any] = []
     project_id: str
+    updated_at: datetime = None
+    created_at: datetime = None
+
+
+class SwitchButton(BaseModel):
+    switch_name: str
+    state: bool
+    device_id: str
     updated_at: datetime = None
     created_at: datetime = None
 

@@ -8,7 +8,7 @@ from models.UserModel import Logs
 log_router = APIRouter(prefix="/logs", tags=["logs"])
 
 
-@log_router.post("/create/log", status_code=status.HTTP_201_CREATED)
+# @log_router.post("/create/log", status_code=status.HTTP_201_CREATED)
 async def post_logs(logs: Logs):
     user = user_col.find_one({"_id": ObjectId(logs.user_id)})
     if user is None:
@@ -33,25 +33,25 @@ async def post_logs(logs: Logs):
     return {"message": f"Created Log {log.title} Successfully!"}
 
 
-@log_router.put("/edit/{id}", status_code=status.HTTP_202_ACCEPTED)
-async def edit_log(id: str, logs: Logs):
-    log = logs_col.find_one({"_id": ObjectId(id)})
-    if log is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Log with id {id} is not Found!",
-        )
-    log_single = Logs(
-        title=logs.title,
-        l_type=logs.l_type,
-        description=logs.description,
-        level=logs.level,
-        user_id=logs.user_id,
-        updated_at=datetime.now(),
-        created_at=log["created_at"],
-    )
-    logs_col.update_one({"_id": ObjectId(id)}, {"$set": dict(log_single)})
-    return {"message": f"Successfully edited Log {id}"}
+# @log_router.put("/edit/{id}", status_code=status.HTTP_202_ACCEPTED)
+# async def edit_log(id: str, logs: Logs):
+#     log = logs_col.find_one({"_id": ObjectId(id)})
+#     if log is None:
+#         raise HTTPException(
+#             status_code=status.HTTP_404_NOT_FOUND,
+#             detail="Log with id {id} is not Found!",
+#         )
+#     log_single = Logs(
+#         title=logs.title,
+#         l_type=logs.l_type,
+#         description=logs.description,
+#         level=logs.level,
+#         user_id=logs.user_id,
+#         updated_at=datetime.now(),
+#         created_at=log["created_at"],
+#     )
+#     logs_col.update_one({"_id": ObjectId(id)}, {"$set": dict(log_single)})
+#     return {"message": f"Successfully edited Log {id}"}
 
 
 @log_router.delete("/delete/{id}", status_code=status.HTTP_202_ACCEPTED)

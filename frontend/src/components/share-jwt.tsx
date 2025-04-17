@@ -46,7 +46,7 @@ export function ShareJWT({
 							navigator.clipboard.writeText(`/${userId}/${deviceId}`)
 						}}
 						size="sm"
-						className="px-3"
+						className="px-3 cursor-pointer"
 					>
 						<span className="sr-only">Copy</span>
 						<Copy />

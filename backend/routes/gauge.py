@@ -4,17 +4,18 @@ from bson import ObjectId
 from configurations import devices_col, gauge_col
 from fastapi import APIRouter, HTTPException, status
 from models.UserModel import GaugeMeasurements
+from schemas.GaugeSchema import gauge_individual_serial
 
 gauge_router = APIRouter(prefix="/gauges", tags=["gauges"])
 
 
 @gauge_router.post("/create", status_code=status.HTTP_201_CREATED)
-async def create_chart(gauges: GaugeMeasurements):
+async def create_gauge(gauges: GaugeMeasurements):
     device = devices_col.find_one({"_id": ObjectId(gauges.device_id)})
     if device is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Gauge with id {gauges.device_id} is not found. You cannot proceed creating a chart without a device",
+            detail=f"Gauge with id {gauges.device_id} is not found. You cannot proceed creating a gauge without a device",
         )
 
     gauge = GaugeMeasurements(
@@ -36,8 +37,20 @@ async def create_chart(gauges: GaugeMeasurements):
     return {"message": f"Created Gauge {gauge.title} Successfully!"}
 
 
+@gauge_router.get("/get/{id}", status_code=status.HTTP_202_ACCEPTED)
+async def get_gauge(id: str):
+    gauge = gauge_col.find_one({"_id": ObjectId(id)})
+    if gauge is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Gauge with id: {id} is not found",
+        )
+
+    return gauge_individual_serial(gauge)
+
+
 @gauge_router.put("/edit/{id}", status_code=status.HTTP_202_ACCEPTED)
-async def edit_chart(id: str, gauges: GaugeMeasurements):
+async def edit_gauge(id: str, gauges: GaugeMeasurements):
     ga = gauge_col.find_one({"_id": ObjectId(id)})
     if ga is None:
         raise HTTPException(
@@ -61,7 +74,7 @@ async def edit_chart(id: str, gauges: GaugeMeasurements):
 
 
 @gauge_router.delete("/delete/{id}", status_code=status.HTTP_200_OK)
-async def delete_chart(id: str):
+async def delete_gauge(id: str):
     gauge = gauge_col.find_one({"_id": ObjectId(id)})
     if gauge is None:
         raise HTTPException(

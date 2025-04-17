@@ -1,4 +1,4 @@
-def chart_individual_serial(charts):
+def switch_individual_serial(charts):
     return {
         "id": str(charts["_id"]),
         "title": charts["title"],
@@ -10,5 +10,5 @@ def chart_individual_serial(charts):
     }
 
 
-def chart_list_serial(charts) -> list:
-    return [chart_individual_serial(chart) for chart in charts]
+def switch_list_serial(charts) -> list:
+    return [switch_individual_serial(chart) for chart in charts]

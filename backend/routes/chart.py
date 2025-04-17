@@ -4,11 +4,20 @@ from bson import ObjectId
 from configurations import chart_col, devices_col
 from fastapi import APIRouter, HTTPException, status
 from models.UserModel import ChartMeasurement
+from pydantic import BaseModel
+from schemas.ChartSchema import chart_individual_serial
 
 chart_router = APIRouter(prefix="/charts", tags=["charts"])
 
 
-@chart_router.post("/chart/create", status_code=status.HTTP_201_CREATED)
+class ChartMeasurementEdit(BaseModel):
+    title: str
+    topic: str
+    name: str
+    color: str
+
+
+@chart_router.post("/create", status_code=status.HTTP_201_CREATED)
 async def create_chart(charts: ChartMeasurement):
     device = devices_col.find_one({"_id": ObjectId(charts.device_id)})
     if device is None:
@@ -20,7 +29,8 @@ async def create_chart(charts: ChartMeasurement):
     chart = ChartMeasurement(
         title=charts.title,
         topic=charts.topic,
-        configs=charts.configs,
+        name=charts.name,
+        color=charts.color,
         device_id=charts.device_id,
         created_at=datetime.now(),
         updated_at=datetime.now(),
@@ -33,8 +43,19 @@ async def create_chart(charts: ChartMeasurement):
     return {"message": f"Created Chart {chart.title} Successfully!"}
 
 
-@chart_router.put("/charts/edit/{id}", status_code=status.HTTP_202_ACCEPTED)
-async def edit_chart(id: str, charts: ChartMeasurement):
+@chart_router.get("/get/{id}", status_code=status.HTTP_200_OK)
+async def get_single_chart(id: str):
+    chart = chart_col.find_one({"_id": ObjectId(id)})
+    if chart is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Chart with id: {id} is not found",
+        )
+    return chart_individual_serial(chart)
+
+
+@chart_router.put("/edit/{id}", status_code=status.HTTP_202_ACCEPTED)
+async def edit_chart(id: str, charts: ChartMeasurementEdit):
     ch = chart_col.find_one({"_id": ObjectId(id)})
     if ch is None:
         raise HTTPException(
@@ -45,7 +66,8 @@ async def edit_chart(id: str, charts: ChartMeasurement):
     chart = ChartMeasurement(
         title=charts.title,
         topic=charts.topic,
-        configs=charts.configs,
+        name=charts.name,
+        color=charts.color,
         device_id=ch["device_id"],
         created_at=ch["created_at"],
         updated_at=datetime.now(),
@@ -54,7 +76,7 @@ async def edit_chart(id: str, charts: ChartMeasurement):
     return {"message": f"Successfully edited Chart {id}"}
 
 
-@chart_router.delete("/charts/delete/{id}", status_code=status.HTTP_200_OK)
+@chart_router.delete("/delete/{id}", status_code=status.HTTP_200_OK)
 async def delete_chart(id: str):
     chart = chart_col.find_one({"_id": ObjectId(id)})
     if chart is None:

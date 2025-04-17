@@ -47,27 +47,27 @@ export function LoginForm({
 			.catch((e) => console.log(e.message))
 	}
 
-	const verifyUser = async () => {
-		let token = localStorage.getItem("token")
-		await axios({
-			method: "get",
-			url: `http://localhost:8000/auth/verif`,
-			headers: {
-				Authorization: `Bearer ${token}`,
-			},
-		})
-			.then(() => {
-				navigate({ to: "/dashboard" })
-			})
-			.catch((e) => {
-				console.log(e.message)
-				throw redirect({ to: "/" })
-			})
-	}
+	// const verifyUser = async () => {
+	// 	let token = localStorage.getItem("token")
+	// 	await axios({
+	// 		method: "get",
+	// 		url: `http://localhost:8000/auth/verif`,
+	// 		headers: {
+	// 			Authorization: `Bearer ${token}`,
+	// 		},
+	// 	})
+	// 		.then(() => {
+	// 			navigate({ to: "/dashboard" })
+	// 		})
+	// 		.catch((e) => {
+	// 			console.log(e.message)
+	// 			throw redirect({ to: "/" })
+	// 		})
+	// }
 
-	useEffect(() => {
-		verifyUser()
-	}, [])
+	// useEffect(() => {
+	// 	verifyUser()
+	// }, [])
 
 	return (
 		<div className={cn("flex flex-col gap-6", className)} {...props}>

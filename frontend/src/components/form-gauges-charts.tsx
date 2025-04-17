@@ -34,7 +34,6 @@ interface GaugeProps {
 interface ChartProps {
 	title: string
 	topic: string
-	labelName: string
 	name: string
 	color: string
 }
@@ -59,7 +58,6 @@ export function FormGaugesCharts({
 	const [formCharts, setFormCharts] = useState<ChartProps>({
 		title: "",
 		topic: "",
-		labelName: "",
 		name: "",
 		color: "black",
 	})
@@ -89,7 +87,6 @@ export function FormGaugesCharts({
 		setFormCharts({
 			title: "",
 			topic: "",
-			labelName: "",
 			name: "",
 			color: "black",
 		})
@@ -119,7 +116,21 @@ export function FormGaugesCharts({
 
 	const handleSubmitChart = async (e: React.MouseEvent<HTMLButtonElement>) => {
 		e.preventDefault()
-
+		await axios({
+			method: "post",
+			url: `http://localhost:8000/charts/create`,
+			data: {
+				title: formCharts.title,
+				topic: formCharts.topic,
+				name: formCharts.name,
+				color: formCharts.color,
+				device_id: deviceId,
+			},
+		})
+			.then((res) => console.log(res.data))
+			.catch((e) => console.log(e.message))
+		setRefresh(!refresh)
+		setOpen(false)
 		handleReset()
 	}
 
@@ -232,13 +243,13 @@ export function FormGaugesCharts({
 					/>
 				</div>
 				<div className="grid grid-cols-4 items-center gap-4">
-					<Label htmlFor="labelName" className="text-right">
+					<Label htmlFor="name" className="text-right">
 						Label Name
 					</Label>
 					<Input
 						onChange={handleFormChartChange}
-						name="labelName"
-						value={formCharts.labelName}
+						name="name"
+						value={formCharts.name}
 						className="col-span-3"
 						required
 					/>

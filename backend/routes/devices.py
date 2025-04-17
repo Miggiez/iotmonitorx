@@ -31,6 +31,10 @@ class Publisher(BaseModel):
     state: bool
 
 
+class DeviceUpdate(BaseModel):
+    device_name: str
+
+
 @device_router.post("/create/device", status_code=status.HTTP_201_CREATED)
 async def post_device(devices: Devices):
     project = project_col.find_one({"_id": ObjectId(devices.project_id)})
@@ -72,7 +76,7 @@ async def get_device(id: str):
 
 
 @device_router.put("/edit/{id}", status_code=status.HTTP_200_OK)
-async def edit_device(id: str, devices: Devices):
+async def edit_device(id: str, devices: DeviceUpdate):
     dev = devices_col.find_one({"_id": ObjectId(id)})
     if dev is None:
         raise HTTPException(
@@ -84,7 +88,7 @@ async def edit_device(id: str, devices: Devices):
         charts=dev["charts"],
         gauges=dev["gauges"],
         project_id=dev["project_id"],
-        created_at=datetime.now(),
+        created_at=dev["created_at"],
         updated_at=datetime.now(),
     )
     devices_col.update_one({"_id": ObjectId(id)}, {"$set": dict(device)})

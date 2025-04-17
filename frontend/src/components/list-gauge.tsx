@@ -7,10 +7,12 @@ export const ListGauge = ({
 	deviceId,
 	refresh,
 	userId,
+	fields,
 }: {
 	deviceId: string
 	refresh: boolean
 	userId: string
+	fields: string[] | null
 }) => {
 	const [gauges, setGauges] = useState<GaugeProps[]>([])
 	const getGauges = async () => {
@@ -40,6 +42,7 @@ export const ListGauge = ({
 					unit={gauge.unit}
 					deviceId={deviceId}
 					userId={userId}
+					fields={fields}
 				/>
 			))}
 		</div>
