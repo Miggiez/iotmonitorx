@@ -14,6 +14,7 @@ from routes.chart import chart_router
 from routes.devices import device_router
 from routes.gauge import gauge_router
 from routes.project import project_router
+from routes.switch import switch_router
 from routes.user import user_router
 
 from influxdb import InfluxDBClient
@@ -122,6 +123,7 @@ app.include_router(user_router)
 app.include_router(chart_router)
 app.include_router(auth_router)
 app.include_router(gauge_router)
+app.include_router(switch_router)
 
 
 if __name__ == "__main__":

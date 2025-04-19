@@ -39,7 +39,7 @@ class Devices(BaseModel):
 
 class SwitchButton(BaseModel):
     switch_name: str
-    state: bool
+    topic: str
     device_id: str
     updated_at: datetime = None
     created_at: datetime = None
@@ -64,10 +64,11 @@ class LevelEnum(str, Enum):
     user = "user"
     chart = "chart"
     gaguge = "gauge"
+    switch = "switch"
+    auth = "auth"
 
 
 class Logs(BaseModel):
-    title: str
     l_type: LogEnum
     description: str
     level: LevelEnum

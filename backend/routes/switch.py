@@ -12,21 +12,22 @@ switch_router = APIRouter(prefix="/switches", tags=["switches"])
 
 class SwitchButtonEdit(BaseModel):
     state_name: str
-    state: bool
+    topic: str
+    device_id: str
 
 
 @switch_router.post("/create", status_code=status.HTTP_201_CREATED)
 async def create_switch(switches: SwitchButton):
-    sw = switch_col.find_one({"_id": ObjectId(switches.device_id)})
-    if sw is None:
+    device = devices_col.find_one({"_id": ObjectId(switches.device_id)})
+    if device is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Switch with id {sw.device_id} is not found. You cannot proceed creating a switch without a device",
+            detail=f"Device with id {switches.device_id} is not found. You cannot proceed creating a switch without a device",
         )
 
     switch = SwitchButton(
         switch_name=switches.switch_name,
-        state=switches.state,
+        topic=switches.topic,
         device_id=switches.device_id,
         updated_at=datetime.now(),
         created_at=datetime.now(),
@@ -34,9 +35,9 @@ async def create_switch(switches: SwitchButton):
 
     id = switch_col.insert_one(dict(switch)).inserted_id
     devices_col.find_one_and_update(
-        {"_id": ObjectId(switch.device_id)}, {"$push": {"gauges": id}}
+        {"_id": ObjectId(switch.device_id)}, {"$push": {"switches": id}}
     )
-    return {"message": f"Created Switch {switch.title} Successfully!"}
+    return {"message": f"Created Switch {switch.switch_name} Successfully!"}
 
 
 @switch_router.get("/get/{id}", status_code=status.HTTP_202_ACCEPTED)
@@ -62,7 +63,7 @@ async def edit_switch(id: str, switches: SwitchButtonEdit):
 
     switch = SwitchButton(
         switch_name=switches.switch_name,
-        state=switches.state,
+        topic=switches.topic,
         device_id=sw["device_id"],
         updated_at=datetime.now(),
         created_at=sw["device_id"],
@@ -81,7 +82,7 @@ async def delete_switch(id: str):
         )
     devices_col.update_one(
         {"_id": ObjectId(switch["device_id"])},
-        {"$pull": {"gauges": ObjectId(id)}},
+        {"$pull": {"switches": ObjectId(id)}},
     )
     switch_col.find_one_and_delete({"_id": ObjectId(id)})
-    return {"message": f"Successfully deleted Switch {id} {switch['title']}"}
+    return {"message": f"Successfully deleted Switch {id} {switch['switch_name']}"}

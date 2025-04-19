@@ -3,7 +3,8 @@ from datetime import datetime
 from bson import ObjectId
 from configurations import chart_col, devices_col
 from fastapi import APIRouter, HTTPException, status
-from models.UserModel import ChartMeasurement
+from logs import post_logs
+from models.UserModel import ChartMeasurement, Logs
 from pydantic import BaseModel
 from schemas.ChartSchema import chart_individual_serial
 
@@ -17,13 +18,23 @@ class ChartMeasurementEdit(BaseModel):
     color: str
 
 
-@chart_router.post("/create", status_code=status.HTTP_201_CREATED)
-async def create_chart(charts: ChartMeasurement):
+@chart_router.post("/create/{user_id}", status_code=status.HTTP_201_CREATED)
+async def create_chart(user_id: str, charts: ChartMeasurement):
     device = devices_col.find_one({"_id": ObjectId(charts.device_id)})
     if device is None:
+        await post_logs(
+            logs=Logs(
+                l_type="error",
+                description=f"Device with id {charts.device_id} is not found. Failed to create Chart!",
+                level="chart",
+                user_id=user_id,
+                updated_at=datetime.now(),
+                created_at=datetime.now(),
+            )
+        )
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Device with id {charts.device_id} is not found. You cannot proceed creating a chart without a device",
+            detail=f"Device with id {charts.device_id} is not found. Failed to create Chart!",
         )
 
     chart = ChartMeasurement(
@@ -40,13 +51,34 @@ async def create_chart(charts: ChartMeasurement):
     devices_col.find_one_and_update(
         {"_id": ObjectId(chart.device_id)}, {"$push": {"charts": id}}
     )
+
+    await post_logs(
+        logs=Logs(
+            l_type="message",
+            description=f"Created Chart {chart.title} Successfully!",
+            level="chart",
+            user_id=user_id,
+            updated_at=datetime.now(),
+            created_at=datetime.now(),
+        )
+    )
     return {"message": f"Created Chart {chart.title} Successfully!"}
 
 
-@chart_router.get("/get/{id}", status_code=status.HTTP_200_OK)
-async def get_single_chart(id: str):
+@chart_router.get("/get/{id}/{user_id}", status_code=status.HTTP_200_OK)
+async def get_single_chart(id: str, user_id: str):
     chart = chart_col.find_one({"_id": ObjectId(id)})
     if chart is None:
+        await post_logs(
+            logs=Logs(
+                l_type="error",
+                description=f"Chart with id: {id} is not found. Failed to get Chart!",
+                level="chart",
+                user_id=user_id,
+                updated_at=datetime.now(),
+                created_at=datetime.now(),
+            )
+        )
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Chart with id: {id} is not found",
@@ -54,13 +86,23 @@ async def get_single_chart(id: str):
     return chart_individual_serial(chart)
 
 
-@chart_router.put("/edit/{id}", status_code=status.HTTP_202_ACCEPTED)
-async def edit_chart(id: str, charts: ChartMeasurementEdit):
+@chart_router.put("/edit/{id}/{user_id}", status_code=status.HTTP_202_ACCEPTED)
+async def edit_chart(id: str, user_id: str, charts: ChartMeasurementEdit):
     ch = chart_col.find_one({"_id": ObjectId(id)})
     if ch is None:
+        await post_logs(
+            logs=Logs(
+                l_type="error",
+                description=f"Chart with id: {id} is not found. Failed to edit Chart!",
+                level="chart",
+                user_id=user_id,
+                updated_at=datetime.now(),
+                created_at=datetime.now(),
+            )
+        )
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Chart with id: {id} is not found",
+            detail=f"Chart with id: {id} is not found. Failed to edit Chart",
         )
 
     chart = ChartMeasurement(
@@ -73,20 +115,50 @@ async def edit_chart(id: str, charts: ChartMeasurementEdit):
         updated_at=datetime.now(),
     )
     chart_col.update_one({"_id": ObjectId(id)}, {"$set": dict(chart)})
-    return {"message": f"Successfully edited Chart {id}"}
+    await post_logs(
+        logs=Logs(
+            l_type="message",
+            description=f"Successfully edited Chart {id}!",
+            level="chart",
+            user_id=user_id,
+            updated_at=datetime.now(),
+            created_at=datetime.now(),
+        )
+    )
+    return {"message": f"Successfully edited Chart {id}!"}
 
 
-@chart_router.delete("/delete/{id}", status_code=status.HTTP_200_OK)
-async def delete_chart(id: str):
+@chart_router.delete("/delete/{id}/{user_id}", status_code=status.HTTP_200_OK)
+async def delete_chart(id: str, user_id: str):
     chart = chart_col.find_one({"_id": ObjectId(id)})
     if chart is None:
+        await post_logs(
+            logs=Logs(
+                l_type="error",
+                description=f"Chart with id: {id} is not found. Failed to delete Chart!",
+                level="chart",
+                user_id=user_id,
+                updated_at=datetime.now(),
+                created_at=datetime.now(),
+            )
+        )
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Chart with id: {id} is not found",
+            detail=f"Chart with id: {id} is not found. Failed to delete Chart!",
         )
     devices_col.update_one(
         {"_id": ObjectId(chart["device_id"])},
         {"$pull": {"charts": ObjectId(id)}},
     )
     chart_col.find_one_and_delete({"_id": ObjectId(id)})
+    await post_logs(
+        logs=Logs(
+            l_type="message",
+            description=f"Successfully deleted Chart {id} {chart['title']}",
+            level="chart",
+            user_id=user_id,
+            updated_at=datetime.now(),
+            created_at=datetime.now(),
+        )
+    )
     return {"message": f"Successfully deleted Chart {id} {chart['title']}"}

@@ -8,10 +8,12 @@ from configurations import (
     gauge_col,
     influx_connection,
     project_col,
+    switch_col,
     user_col,
 )
 from fastapi import APIRouter, HTTPException, status
-from models.UserModel import Devices
+from logs import post_logs
+from models.UserModel import Devices, Logs
 from pydantic import BaseModel
 from schemas.ChartSchema import chart_list_serial
 from schemas.DeviceSchema import (
@@ -20,6 +22,7 @@ from schemas.DeviceSchema import (
     device_individual_serial,
 )
 from schemas.GaugeSchema import gauge_list_serial
+from schemas.SwitchSchema import switch_list_serial
 
 device_router = APIRouter(prefix="/devices", tags=["devices"])
 
@@ -39,6 +42,16 @@ class DeviceUpdate(BaseModel):
 async def post_device(devices: Devices):
     project = project_col.find_one({"_id": ObjectId(devices.project_id)})
     if not project:
+        await post_logs(
+            logs=Logs(
+                l_type="error",
+                description=f"Project with id {devices.project_id} is not found. Failed to create Device!",
+                level="device",
+                user_id=project["user_id"],
+                updated_at=datetime.now(),
+                created_at=datetime.now(),
+            )
+        )
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Project with id {devices.project_id} is not found. You cannot proceed creating a chart without a device",
@@ -56,32 +69,62 @@ async def post_device(devices: Devices):
     project_col.find_one_and_update(
         {"_id": ObjectId(device.project_id)}, {"$push": {"devices": id}}
     )
+    await post_logs(
+        logs=Logs(
+            l_type="message",
+            description=f"Created Device {device.device_name}  Successfully!",
+            level="device",
+            user_id=project["user_id"],
+            updated_at=datetime.now(),
+            created_at=datetime.now(),
+        )
+    )
     return {
         "message": f"Created Device {device.device_name}  Successfully!",
         "id": str(id),
     }
 
 
-@device_router.get("/get/{id}", status_code=status.HTTP_201_CREATED)
-async def get_device(id: str):
+@device_router.get("/get/{id}/{user_id}", status_code=status.HTTP_201_CREATED)
+async def get_device(id: str, user_id: str):
     print(id)
     device = devices_col.find_one({"_id": ObjectId(id)})
     if not device:
+        await post_logs(
+            logs=Logs(
+                l_type="error",
+                description=f"Device with this id: {id} is not found. Failed to get Device!",
+                level="device",
+                user_id=user_id,
+                updated_at=datetime.now(),
+                created_at=datetime.now(),
+            )
+        )
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Device with this id: {id} is not found",
+            detail=f"Device with this id: {id} is not found. Failed to get Device!",
         )
 
     return device_individual_serial(device)
 
 
-@device_router.put("/edit/{id}", status_code=status.HTTP_200_OK)
-async def edit_device(id: str, devices: DeviceUpdate):
+@device_router.put("/edit/{id}/{user_id}", status_code=status.HTTP_200_OK)
+async def edit_device(id: str, user_id: str, devices: DeviceUpdate):
     dev = devices_col.find_one({"_id": ObjectId(id)})
     if dev is None:
+        await post_logs(
+            logs=Logs(
+                l_type="error",
+                description=f"Device with this id: {id} is not found. Failed to edit Device!",
+                level="device",
+                user_id=user_id,
+                updated_at=datetime.now(),
+                created_at=datetime.now(),
+            )
+        )
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Device with id {id} is not Found!",
+            detail=f"Device with this id: {id} is not found. Failed to edit Device!",
         )
     device = Devices(
         device_name=devices.device_name,
@@ -92,7 +135,17 @@ async def edit_device(id: str, devices: DeviceUpdate):
         updated_at=datetime.now(),
     )
     devices_col.update_one({"_id": ObjectId(id)}, {"$set": dict(device)})
-    return {"message": f"Successfully edited {id}"}
+    await post_logs(
+        logs=Logs(
+            l_type="error",
+            description=f"Successfully edited Device {id}",
+            level="device",
+            user_id=user_id,
+            updated_at=datetime.now(),
+            created_at=datetime.now(),
+        )
+    )
+    return {"message": f"Successfully edited Device {id}"}
 
 
 @device_router.delete("/delete/{id}/{user_id}", status_code=status.HTTP_200_OK)
@@ -100,9 +153,19 @@ async def delete_device(id: str, user_id: str):
     influx = influx_connection()
     device = devices_col.find_one({"_id": ObjectId(id)})
     if device is None:
+        await post_logs(
+            logs=Logs(
+                l_type="error",
+                description=f"Device with this id: {id} is not found. Failed to delete Device!",
+                level="device",
+                user_id=user_id,
+                updated_at=datetime.now(),
+                created_at=datetime.now(),
+            )
+        )
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="You cannot delete Device id: {id}, because this does not exist",
+            detail=f"Device with this id: {id} is not found. Failed to delete Device!",
         )
     project_col.update_one(
         {"_id": ObjectId(device["project_id"])},
@@ -113,16 +176,36 @@ async def delete_device(id: str, user_id: str):
     await delete_charts_array(device["charts"])
     await delete_gauges_array(device["gauges"])
     devices_col.delete_one({"_id": ObjectId(id)})
-    return {"message": f"Successfully deleted {id}"}
+    await post_logs(
+        logs=Logs(
+            l_type="message",
+            description=f"Successfully deleted Device {id}",
+            level="device",
+            user_id=user_id,
+            updated_at=datetime.now(),
+            created_at=datetime.now(),
+        )
+    )
+    return {"message": f"Successfully deleted Device {id}"}
 
 
-@device_router.get("/{id}/getall/charts", status_code=status.HTTP_200_OK)
-async def get_all_charts(id: str):
+@device_router.get("/{id}/getall/charts/{user_id}", status_code=status.HTTP_200_OK)
+async def get_all_charts(id: str, user_id: str):
     device = devices_col.find_one({"_id": ObjectId(id)})
     if not device:
+        await post_logs(
+            logs=Logs(
+                l_type="error",
+                description=f"Device with this id: {id} is not found. Failed to get all Charts!",
+                level="device",
+                user_id=user_id,
+                updated_at=datetime.now(),
+                created_at=datetime.now(),
+            )
+        )
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Device with id {id} does not exist!",
+            detail=f"Device with this id: {id} is not found. Failed to get all Charts!",
         )
     device_charts = chart_list_serial(
         chart_col.find({"_id": {"$in": device["charts"]}})
@@ -130,13 +213,23 @@ async def get_all_charts(id: str):
     return device_charts
 
 
-@device_router.get("/{id}/getall/gauges", status_code=status.HTTP_200_OK)
-async def get_all_gauges(id: str):
+@device_router.get("/{id}/getall/gauges/{user_id}", status_code=status.HTTP_200_OK)
+async def get_all_gauges(id: str, user_id: str):
     device = devices_col.find_one({"_id": ObjectId(id)})
     if not device:
+        await post_logs(
+            logs=Logs(
+                l_type="error",
+                description=f"Device with this id: {id} is not found. Failed to get all Gauges!",
+                level="device",
+                user_id=user_id,
+                updated_at=datetime.now(),
+                created_at=datetime.now(),
+            )
+        )
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Device with id {id} does not exist!",
+            detail=f"Device with this id: {id} is not found. Failed to get all Gauges!",
         )
     device_gauges = gauge_list_serial(
         gauge_col.find({"_id": {"$in": device["gauges"]}})
@@ -144,14 +237,48 @@ async def get_all_gauges(id: str):
     return device_gauges
 
 
+@device_router.get("/{id}/getall/switches/{user_id}", status_code=status.HTTP_200_OK)
+async def get_all_switches(id: str, user_id: str):
+    device = devices_col.find_one({"_id": ObjectId(id)})
+    if not device:
+        await post_logs(
+            logs=Logs(
+                l_type="error",
+                description=f"Device with this id: {id} is not found. Failed to get all Switch!",
+                level="device",
+                user_id=user_id,
+                updated_at=datetime.now(),
+                created_at=datetime.now(),
+            )
+        )
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Device with this id: {id} is not found. Failed to get all Switch!",
+        )
+    device_switches = switch_list_serial(
+        switch_col.find({"_id": {"$in": device["switches"]}})
+    )
+    return device_switches
+
+
 @device_router.get("/{user_id}/{id}/getall/fields", status_code=status.HTTP_200_OK)
 async def get_all_fields(id: str, user_id: str):
     device = devices_col.find_one({"_id": ObjectId(id)})
     user = user_col.find_one({"_id": ObjectId(user_id)})
     if not user:
+        await post_logs(
+            logs=Logs(
+                l_type="error",
+                description=f"User with this id: {id} is not found. Failed to get all Fields!",
+                level="device",
+                user_id=user_id,
+                updated_at=datetime.now(),
+                created_at=datetime.now(),
+            )
+        )
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="User with id {user_id} does not exist!",
+            detail=f"User with this id: {id} is not found. Failed to get all Fields!",
         )
     if not device:
         raise HTTPException(

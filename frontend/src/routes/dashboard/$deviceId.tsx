@@ -3,6 +3,7 @@ import { FormDevicesEdit } from "@/components/form-device-edit"
 import { FormGaugesCharts } from "@/components/form-gauges-charts"
 import { ListChart } from "@/components/list-chart"
 import { ListGauge } from "@/components/list-gauge"
+import { ListSwitch } from "@/components/list-switch"
 import { ShareJWT } from "@/components/share-jwt"
 import { Separator } from "@/components/ui/separator"
 import { useRefreshContext } from "@/store/generalContext"
@@ -78,7 +79,12 @@ function RouteComponent() {
 				</div>
 			</div>
 			<Separator className="mb-10" />
-
+			<ListSwitch
+				deviceId={deviceId}
+				refresh={refresh}
+				userId={userId}
+				fields={fileds}
+			/>
 			<div className="flex w-[100%] items-center py-3 mt-10">
 				<h1 className="text-2xl font-bold mb-3">Gauges</h1>
 			</div>

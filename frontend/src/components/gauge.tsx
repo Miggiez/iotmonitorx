@@ -236,7 +236,6 @@ export default function Gauge({
 			url: `http://localhost:8000/gauges/get/${id}`,
 		})
 			.then((res) => {
-				console.log(res.data)
 				setFormGauges({
 					topic: res.data.topic,
 					title: res.data.title,

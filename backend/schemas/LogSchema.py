@@ -1,7 +1,6 @@
 def log_individual_serial(logs):
     return {
         "id": str(logs["_id"]),
-        "title": logs["title"],
         "l_type": logs["l_type"],
         "description": logs["description"],
         "level": logs["level"],

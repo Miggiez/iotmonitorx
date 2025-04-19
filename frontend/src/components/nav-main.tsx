@@ -1,6 +1,6 @@
 "use client"
 
-import { Bot, ChevronRight, Settings2, Terminal, Trash2 } from "lucide-react"
+import { ChevronRight, Trash2 } from "lucide-react"
 
 import {
 	Collapsible,
@@ -38,7 +38,7 @@ export function NavMain({ userId }: { userId: string }) {
 			.then((data) => {
 				setProjects(data.data)
 			})
-			.catch((e) => console.log(e.message))
+			.catch((e) => console.log(e.response.data.detail))
 	}
 
 	const deleteProject = async (projectId: string) => {
@@ -50,7 +50,7 @@ export function NavMain({ userId }: { userId: string }) {
 				console.log(res.data)
 				setRefresh(!refresh)
 			})
-			.catch((e) => console.log(e))
+			.catch((e) => console.log(e.response.data.detail))
 	}
 
 	useEffect(() => {
@@ -117,7 +117,7 @@ export function NavMain({ userId }: { userId: string }) {
 					</ScrollArea>
 				</SidebarMenu>
 			</SidebarGroup>
-			<SidebarGroup>
+			{/* <SidebarGroup>
 				<SidebarMenu>
 					<SidebarGroupLabel>Settings</SidebarGroupLabel>
 					<Collapsible asChild className="group/collapsible">
@@ -152,7 +152,7 @@ export function NavMain({ userId }: { userId: string }) {
 						</SidebarMenuItem>
 					</Collapsible>
 				</SidebarMenu>
-			</SidebarGroup>
+			</SidebarGroup> */}
 		</>
 	)
 }

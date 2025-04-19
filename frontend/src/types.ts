@@ -57,3 +57,32 @@ export interface LoginProps {
 	email: string
 	password: string
 }
+
+export interface SwitchButtonProps {
+	id: string
+	switch_name: string
+	topic: string
+	created_at: string
+	updated_at: string
+}
+
+export interface SwitchButtonFormProps {
+	switch_name: string
+	topic: string
+}
+
+export interface ChartFormProps {
+	title: string
+	topic: string
+	name: string
+	color: string
+}
+
+export interface GaugeFormProps {
+	topic: string
+	title: string
+	max_value: number
+	min_value: number
+	m_type: string
+	unit: string
+}

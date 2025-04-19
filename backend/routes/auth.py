@@ -4,6 +4,8 @@ from configurations import user_col
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
+from logs import post_logs
+from models.UserModel import Logs
 from passlib.context import CryptContext
 from pydantic import BaseModel
 
@@ -53,6 +55,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
     user = user_col.find_one({"email": email})
     if user is None:
         raise credentials_exception
+
     return {
         "id": str(user["_id"]),
         "username": user["username"],
@@ -71,4 +74,16 @@ def login_user(login_request: LoginRequest):
         data={"sub": user["email"]},
         expires_delta=timedelta(minutes=20),
     )
+
+    await post_logs(
+        logs=Logs(
+            l_type="message",
+            description="Login Successully!",
+            level="auth",
+            user_id=user["_id"],
+            updated_at=datetime.now(),
+            created_at=datetime.now(),
+        )
+    )
+
     return {"access_token": access_token, "token_type": "bearer"}

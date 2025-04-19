@@ -8,7 +8,6 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { PlusCircle } from "lucide-react"
 import { useState } from "react"
@@ -21,22 +20,10 @@ import {
 } from "./ui/select"
 import axios from "axios"
 import { useRefreshContext } from "@/store/generalContext"
-
-interface GaugeProps {
-	topic: string
-	title: string
-	max_value: number
-	min_value: number
-	m_type: string
-	unit: string
-}
-
-interface ChartProps {
-	title: string
-	topic: string
-	name: string
-	color: string
-}
+import { FormCharts } from "./form-chart"
+import { FormGauges } from "./form-gauges"
+import { ChartFormProps, GaugeFormProps, SwitchButtonFormProps } from "@/types"
+import { FormSwitch } from "./form-switch"
 
 export function FormGaugesCharts({
 	deviceId,
@@ -46,7 +33,7 @@ export function FormGaugesCharts({
 	fields: string[] | null
 }) {
 	const { refresh, setRefresh } = useRefreshContext()
-	const [formGauges, setFormGauges] = useState<GaugeProps>({
+	const [formGauges, setFormGauges] = useState<GaugeFormProps>({
 		topic: "",
 		title: "",
 		max_value: 100.0,
@@ -55,7 +42,12 @@ export function FormGaugesCharts({
 		unit: "",
 	})
 
-	const [formCharts, setFormCharts] = useState<ChartProps>({
+	const [formSwitch, setFormSwitch] = useState<SwitchButtonFormProps>({
+		switch_name: "",
+		topic: "",
+	})
+
+	const [formCharts, setFormCharts] = useState<ChartFormProps>({
 		title: "",
 		topic: "",
 		name: "",
@@ -64,16 +56,6 @@ export function FormGaugesCharts({
 
 	const [selection, setSelection] = useState<string>("gauge")
 	const [open, setOpen] = useState<boolean>(false)
-
-	const handleFormGaugeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const { name, value } = e.target
-		setFormGauges({ ...formGauges, [name]: value })
-	}
-
-	const handleFormChartChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const { name, value } = e.target
-		setFormCharts({ ...formCharts, [name]: value })
-	}
 
 	const handleReset = () => {
 		setFormGauges({
@@ -89,6 +71,10 @@ export function FormGaugesCharts({
 			topic: "",
 			name: "",
 			color: "black",
+		})
+		setFormSwitch({
+			switch_name: "",
+			topic: "",
 		})
 	}
 
@@ -134,176 +120,84 @@ export function FormGaugesCharts({
 		handleReset()
 	}
 
-	const Gauges = () => {
-		return (
-			<div className="grid gap-4 py-4">
-				<div className="grid grid-cols-4 items-center gap-4">
-					<Label htmlFor="title" className="text-right">
-						Title
-					</Label>
-					<Input
-						onChange={handleFormGaugeChange}
-						value={formGauges.title}
-						name="title"
-						className="col-span-3"
-						required
-					/>
-				</div>
-				<div className="grid grid-cols-4 items-center gap-4">
-					<Label>Topic</Label>
-					<Select
-						onValueChange={(topic) => {
-							setFormGauges({
-								...formGauges,
-								topic: topic,
-							})
-						}}
-						value={formGauges.topic}
-					>
-						<SelectTrigger id="topic">
-							<SelectValue placeholder="Select" />
-						</SelectTrigger>
-						<SelectContent position="popper">
-							{fields &&
-								fields.map((field, index) => (
-									<SelectItem key={index} value={field}>
-										{field}
-									</SelectItem>
-								))}
-						</SelectContent>
-					</Select>
-				</div>
-				<div className="grid grid-cols-4 items-center gap-4">
-					<Label htmlFor="mType" className="text-right">
-						Sensor Type
-					</Label>
-					<Input
-						onChange={handleFormGaugeChange}
-						value={formGauges.m_type}
-						name="m_type"
-						className="col-span-3"
-						required
-					/>
-				</div>
-				<div className="grid grid-cols-4 items-center gap-4">
-					<Label htmlFor="maxValue" className="text-right">
-						Max Value
-					</Label>
-					<Input
-						onChange={handleFormGaugeChange}
-						value={formGauges.max_value}
-						name="max_value"
-						type="number"
-						className="col-span-3"
-						required
-					/>
-				</div>
-				<div className="grid grid-cols-4 items-center gap-4">
-					<Label htmlFor="minValue" className="text-right">
-						Min Value
-					</Label>
-					<Input
-						onChange={handleFormGaugeChange}
-						value={formGauges.min_value}
-						name="min_value"
-						type="number"
-						className="col-span-3"
-						required
-					/>
-				</div>
-				<div className="grid grid-cols-4 items-center gap-4">
-					<Label htmlFor="unit" className="text-right">
-						Unit
-					</Label>
-					<Input
-						onChange={handleFormGaugeChange}
-						value={formGauges.unit}
-						name="unit"
-						className="col-span-3"
-						required
-					/>
-				</div>
-			</div>
-		)
+	const handleSubmitSwitch = async (e: React.MouseEvent<HTMLButtonElement>) => {
+		e.preventDefault()
+		await axios({
+			method: "post",
+			url: `http://localhost:8000/switches/create`,
+			data: {
+				switch_name: formSwitch.switch_name,
+				topic: formSwitch.topic,
+				device_id: deviceId,
+			},
+		})
+			.then((res) => console.log(res.data))
+			.catch((e) => console.log(e.message))
+		setRefresh(!refresh)
+		setOpen(false)
+		handleReset()
 	}
 
-	const Charts = () => {
-		return (
-			<div className="grid gap-4 py-4">
-				<div className="grid grid-cols-4 items-center gap-4">
-					<Label htmlFor="title" className="text-right">
-						Title
-					</Label>
-					<Input
-						onChange={handleFormChartChange}
-						name="title"
-						value={formCharts.title}
-						className="col-span-3"
-						required
-					/>
-				</div>
-				<div className="grid grid-cols-4 items-center gap-4">
-					<Label htmlFor="name" className="text-right">
-						Label Name
-					</Label>
-					<Input
-						onChange={handleFormChartChange}
-						name="name"
-						value={formCharts.name}
-						className="col-span-3"
-						required
-					/>
-				</div>
-				<div className="grid grid-cols-4 items-center gap-4">
-					<Label>Topic</Label>
-					<Select
-						onValueChange={(topic) => {
-							setFormCharts({
-								...formCharts,
-								topic: topic,
-							})
-						}}
-						value={formCharts.topic}
-					>
-						<SelectTrigger id="topic">
-							<SelectValue placeholder="Select" />
-						</SelectTrigger>
-						<SelectContent position="popper">
-							{fields &&
-								fields.map((field, index) => (
-									<SelectItem key={index} value={field}>
-										{field}
-									</SelectItem>
-								))}
-						</SelectContent>
-					</Select>
-				</div>
-				<div className="grid grid-cols-4 items-center gap-4">
-					<Label>Color</Label>
-					<Select
-						onValueChange={(color) => {
-							setFormCharts({
-								...formCharts,
-								color: color,
-							})
-						}}
-						value={formCharts.color}
-					>
-						<SelectTrigger id="gaugeChart">
-							<SelectValue placeholder="Select" />
-						</SelectTrigger>
-						<SelectContent position="popper">
-							<SelectItem value="black">Black</SelectItem>
-							<SelectItem value="green">Green</SelectItem>
-							<SelectItem value="purple">Purple</SelectItem>
-							<SelectItem value="blue">Blue</SelectItem>
-							<SelectItem value="red">Red</SelectItem>
-							<SelectItem value="orange">Orange</SelectItem>
-						</SelectContent>
-					</Select>
-				</div>
-			</div>
-		)
+	const selectionForms = () => {
+		if (selection === "gauge") {
+			return (
+				<FormGauges
+					formGauges={formGauges}
+					setFormGauges={setFormGauges}
+					fields={fields}
+				/>
+			)
+		} else if (selection === "chart") {
+			return (
+				<FormCharts
+					setFormCharts={setFormCharts}
+					formCharts={formCharts}
+					fields={fields}
+				/>
+			)
+		} else if (selection === "switch") {
+			return (
+				<FormSwitch
+					setFormSwitch={setFormSwitch}
+					formSwitch={formSwitch}
+					fields={fields}
+				/>
+			)
+		}
+	}
+
+	const selectionButtons = () => {
+		if (selection === "gauge") {
+			return (
+				<Button
+					type="submit"
+					onClick={handleSubmitGauge}
+					className="cursor-pointer"
+				>
+					Create new Gauge
+				</Button>
+			)
+		} else if (selection === "chart") {
+			return (
+				<Button
+					type="submit"
+					onClick={handleSubmitChart}
+					className="cursor-pointer"
+				>
+					Create new Chart
+				</Button>
+			)
+		} else if (selection === "switch") {
+			return (
+				<Button
+					type="submit"
+					onClick={handleSubmitSwitch}
+					className="cursor-pointer"
+				>
+					Create new Switch
+				</Button>
+			)
+		}
 	}
 
 	return (
@@ -332,29 +226,12 @@ export function FormGaugesCharts({
 						<SelectContent position="popper">
 							<SelectItem value="gauge">Gauge</SelectItem>
 							<SelectItem value="chart">Chart</SelectItem>
+							<SelectItem value="switch">Switch</SelectItem>
 						</SelectContent>
 					</Select>
 				</div>
-				{selection === "gauge" ? Gauges() : Charts()}
-				<DialogFooter>
-					{selection === "gauge" ? (
-						<Button
-							type="submit"
-							onClick={handleSubmitGauge}
-							className="cursor-pointer"
-						>
-							Create new Gauge
-						</Button>
-					) : (
-						<Button
-							type="submit"
-							onClick={handleSubmitChart}
-							className="cursor-pointer"
-						>
-							Create new Chart
-						</Button>
-					)}
-				</DialogFooter>
+				{selectionForms()}
+				<DialogFooter>{selectionButtons()}</DialogFooter>
 			</DialogContent>
 		</Dialog>
 	)

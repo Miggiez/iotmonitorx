@@ -16,8 +16,8 @@ async def post_logs(logs: Logs):
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"User with id: {logs.user_id} does not exist",
         )
+
     log = Logs(
-        title=logs.title,
         l_type=logs.l_type,
         description=logs.description,
         level=logs.level,

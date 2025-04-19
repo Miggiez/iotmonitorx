@@ -1,14 +1,12 @@
-def switch_individual_serial(charts):
+def switch_individual_serial(switches):
     return {
-        "id": str(charts["_id"]),
-        "title": charts["title"],
-        "topic": charts["topic"],
-        "name": charts["name"],
-        "color": charts["color"],
-        "created_at": charts["created_at"],
-        "updated_at": charts["updated_at"],
+        "id": str(switches["_id"]),
+        "switch_name": switches["switch_name"],
+        "topic": switches["topic"],
+        "created_at": switches["created_at"],
+        "updated_at": switches["updated_at"],
     }
 
 
-def switch_list_serial(charts) -> list:
-    return [switch_individual_serial(chart) for chart in charts]
+def switch_list_serial(switches) -> list:
+    return [switch_individual_serial(switch) for switch in switches]

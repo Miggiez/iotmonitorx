@@ -3,19 +3,30 @@ from datetime import datetime
 from bson import ObjectId
 from configurations import devices_col, gauge_col
 from fastapi import APIRouter, HTTPException, status
-from models.UserModel import GaugeMeasurements
+from logs import post_logs
+from models.UserModel import GaugeMeasurements, Logs
 from schemas.GaugeSchema import gauge_individual_serial
 
 gauge_router = APIRouter(prefix="/gauges", tags=["gauges"])
 
 
-@gauge_router.post("/create", status_code=status.HTTP_201_CREATED)
-async def create_gauge(gauges: GaugeMeasurements):
+@gauge_router.post("/create/{user_id}", status_code=status.HTTP_201_CREATED)
+async def create_gauge(user_id: str, gauges: GaugeMeasurements):
     device = devices_col.find_one({"_id": ObjectId(gauges.device_id)})
     if device is None:
+        await post_logs(
+            logs=Logs(
+                l_type="error",
+                description=f"Device with id {gauges.device_id} is not found. Failed to create Gauge!",
+                level="gauge",
+                user_id=user_id,
+                updated_at=datetime.now(),
+                created_at=datetime.now(),
+            )
+        )
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Gauge with id {gauges.device_id} is not found. You cannot proceed creating a gauge without a device",
+            detail=f"Device with id {gauges.device_id} is not found. Failed to create Gauge!",
         )
 
     gauge = GaugeMeasurements(
@@ -33,6 +44,16 @@ async def create_gauge(gauges: GaugeMeasurements):
     id = gauge_col.insert_one(dict(gauge)).inserted_id
     devices_col.find_one_and_update(
         {"_id": ObjectId(gauge.device_id)}, {"$push": {"gauges": id}}
+    )
+    await post_logs(
+        logs=Logs(
+            l_type="message",
+            description=f"Created Chart {gauge.title} Successfully!",
+            level="gauge",
+            user_id=user_id,
+            updated_at=datetime.now(),
+            created_at=datetime.now(),
+        )
     )
     return {"message": f"Created Gauge {gauge.title} Successfully!"}
 
