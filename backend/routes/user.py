@@ -26,7 +26,8 @@ async def register_user(user: User):
     # Check if the username already exists
     if user_col.find_one({"username": user.username}):
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="User exists!"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"User with username {user.username} already exist, please use another username. Failed to create User!",
         )
 
     # Hash the password
@@ -119,8 +120,7 @@ async def get_all_logs(id: str):
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"User with id {id} does not exist",
         )
-    logs = log_list_serial(logs_col.find({"_id": {"$in": ObjectId(user["logs"])}}))
-    print(logs)
+    logs = log_list_serial(logs_col.find({"_id": {"$in": user["logs"]}}))
     return logs
 
 

@@ -45,7 +45,10 @@ export function SwitchButton({
 	const getSingleSwitch = async () => {
 		await axios({
 			method: "get",
-			url: `http://localhost:8000/switches/get/${id}`,
+			url: `http://localhost:8000/switches/get/${id}/${userId}`,
+			headers: {
+				Authorization: `Bearer ${localStorage.getItem("token")}`,
+			},
 		})
 			.then((res) => {
 				setFormSwitch({
@@ -64,6 +67,9 @@ export function SwitchButton({
 			await axios({
 				method: "get",
 				url: `http://localhost:8000/devices/${userId}/${deviceId}/gauge/${topic}`,
+				headers: {
+					Authorization: `Bearer ${localStorage.getItem("token")}`,
+				},
 			})
 				.then((res) => {
 					let top: any[] = Object.values(res.data[0])
@@ -82,7 +88,10 @@ export function SwitchButton({
 		e.preventDefault()
 		await axios({
 			method: "post",
-			url: `http://localhost:8000/switches/create`,
+			url: `http://localhost:8000/switches/create/${userId}`,
+			headers: {
+				Authorization: `Bearer ${localStorage.getItem("token")}`,
+			},
 			data: {
 				switch_name: formSwitch.switch_name,
 				topic: formSwitch.topic,
@@ -168,7 +177,10 @@ export function SwitchButton({
 		e.preventDefault()
 		await axios({
 			method: "delete",
-			url: `http://localhost:8000/switches/delete/${id}`,
+			url: `http://localhost:8000/switches/delete/${id}/${userId}`,
+			headers: {
+				Authorization: `Bearer ${localStorage.getItem("token")}`,
+			},
 		})
 			.then((res) => {
 				console.log(res.data)
@@ -183,6 +195,9 @@ export function SwitchButton({
 			await axios({
 				method: "post",
 				url: `http://localhost:8000/devices/button/press`,
+				headers: {
+					Authorization: `Bearer ${localStorage.getItem("token")}`,
+				},
 				data: {
 					user_id: userId,
 					device_id: deviceId,

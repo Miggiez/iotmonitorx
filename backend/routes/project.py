@@ -3,7 +3,8 @@ from datetime import datetime
 from bson import ObjectId
 from configurations import devices_col, project_col, user_col
 from fastapi import APIRouter, HTTPException, status
-from models.UserModel import Project
+from models.UserModel import LevelEnum, LogEnum, Logs, Project
+from routes.logs import post_logs
 from schemas.DeviceSchema import device_list_serial
 from schemas.ProjectSchema import delete_devices_array
 
@@ -14,9 +15,19 @@ project_router = APIRouter(prefix="/projects", tags=["projects"])
 async def post_project(projects: Project):
     user = user_col.find_one({"_id": ObjectId(projects.user_id)})
     if not user:
+        await post_logs(
+            logs=Logs(
+                l_type=LogEnum.error,
+                description=f"User with id {projects.user_id} is not found. Failed to create Project!",
+                level=LevelEnum.project,
+                user_id=projects.user_id,
+                updated_at=datetime.now(),
+                created_at=datetime.now(),
+            )
+        )
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"User with id {projects.user_id} does not exist!",
+            detail=f"User with id {projects.user_id} is not found. Failed to create Project!",
         )
     project = Project(
         title=projects.title,
@@ -29,6 +40,18 @@ async def post_project(projects: Project):
     user_col.find_one_and_update(
         {"_id": ObjectId(project.user_id)}, {"$push": {"project": id}}
     )
+
+    await post_logs(
+        logs=Logs(
+            l_type=LogEnum.message,
+            description=f"Created Projects {project.title} Successfully!",
+            level=LevelEnum.project,
+            user_id=projects.user_id,
+            updated_at=datetime.now(),
+            created_at=datetime.now(),
+        )
+    )
+
     return {"message": f"Created Projects {project.title} Successfully!"}
 
 
@@ -36,9 +59,19 @@ async def post_project(projects: Project):
 async def edit_project(id: str, projects: Project):
     proj = project_col.find_one({"_id": ObjectId(id)})
     if not proj:
+        await post_logs(
+            logs=Logs(
+                l_type=LogEnum.error,
+                description=f"Project with id {id} is not found. Failed to edit Project!",
+                level=LevelEnum.project,
+                user_id=proj["user_id"],
+                updated_at=datetime.now(),
+                created_at=datetime.now(),
+            )
+        )
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Project with id {id} does not exist!",
+            detail=f"Project with id {id} is not found. Failed to edit Project!",
         )
     project = Project(
         title=projects.title,
@@ -48,6 +81,17 @@ async def edit_project(id: str, projects: Project):
         updated_at=datetime.now(),
     )
     project_col.update_one({"_id": ObjectId(id)}, {"$set": dict(project)})
+
+    await post_logs(
+        logs=Logs(
+            l_type=LogEnum.message,
+            description=f"Successfully edited Project {id}",
+            level=LevelEnum.project,
+            user_id=proj["user_id"],
+            updated_at=datetime.now(),
+            created_at=datetime.now(),
+        )
+    )
     return {"message": f"Successfully edited Project {id}"}
 
 
@@ -55,9 +99,19 @@ async def edit_project(id: str, projects: Project):
 async def delete_project(id: str):
     project = project_col.find_one({"_id": ObjectId(id)})
     if project is None:
+        await post_logs(
+            logs=Logs(
+                l_type=LogEnum.error,
+                description=f"Project with id {id} is not found. Failed to delete Project!",
+                level=LevelEnum.project,
+                user_id=project["user_id"],
+                updated_at=datetime.now(),
+                created_at=datetime.now(),
+            )
+        )
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="You cannot delete Device id: {id}, because this does not exist",
+            detail=f"Project with id {id} is not found. Failed to delete Project!",
         )
     user_col.update_one(
         {"_id": ObjectId(project["user_id"])},
@@ -65,6 +119,16 @@ async def delete_project(id: str):
     )
     await delete_devices_array(project["devices"])
     project_col.delete_one({"_id": ObjectId(id)})
+    await post_logs(
+        logs=Logs(
+            l_type=LogEnum.message,
+            description=f"Successfully deleted Project {id}",
+            level=LevelEnum.project,
+            user_id=project["user_id"],
+            updated_at=datetime.now(),
+            created_at=datetime.now(),
+        )
+    )
     return {"message": f"Successfully deleted Project {id}"}
 
 
@@ -72,6 +136,16 @@ async def delete_project(id: str):
 async def get_devices(id: str):
     project = project_col.find_one({"_id": ObjectId(id)})
     if not project:
+        await post_logs(
+            logs=Logs(
+                l_type=LogEnum.error,
+                description=f"Project with id {id} is not found. Failed to get all Devices!",
+                level=LevelEnum.project,
+                user_id=project["user_id"],
+                updated_at=datetime.now(),
+                created_at=datetime.now(),
+            )
+        )
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Project with id {id} does not exist!",

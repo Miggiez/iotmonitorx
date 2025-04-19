@@ -4,10 +4,10 @@ from configurations import user_col
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
-from logs import post_logs
-from models.UserModel import Logs
+from models.UserModel import LevelEnum, LogEnum, Logs
 from passlib.context import CryptContext
 from pydantic import BaseModel
+from routes.logs import post_logs
 
 auth_router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -65,8 +65,8 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
 
 
 # ------------------ Auth Routes ------------------ #
-@auth_router.post("/auth/login", status_code=status.HTTP_200_OK)
-def login_user(login_request: LoginRequest):
+@auth_router.post("/login", status_code=status.HTTP_200_OK)
+async def login_user(login_request: LoginRequest):
     user = user_col.find_one({"email": login_request.email})
     if not user or not bcrypt_context.verify(login_request.password, user["password"]):
         raise HTTPException(status_code=401, detail="Invalid username or password")
@@ -77,11 +77,11 @@ def login_user(login_request: LoginRequest):
 
     await post_logs(
         logs=Logs(
-            l_type="message",
+            l_type=LogEnum.message,
             description="Login Successully!",
-            level="auth",
-            user_id=user["_id"],
+            level=LevelEnum.user,
             updated_at=datetime.now(),
+            user_id=str(user["_id"]),
             created_at=datetime.now(),
         )
     )

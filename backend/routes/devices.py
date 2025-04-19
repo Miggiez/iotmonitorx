@@ -12,9 +12,9 @@ from configurations import (
     user_col,
 )
 from fastapi import APIRouter, HTTPException, status
-from logs import post_logs
-from models.UserModel import Devices, Logs
+from models.UserModel import Devices, LevelEnum, LogEnum, Logs
 from pydantic import BaseModel
+from routes.logs import post_logs
 from schemas.ChartSchema import chart_list_serial
 from schemas.DeviceSchema import (
     delete_charts_array,
@@ -38,16 +38,16 @@ class DeviceUpdate(BaseModel):
     device_name: str
 
 
-@device_router.post("/create/device", status_code=status.HTTP_201_CREATED)
-async def post_device(devices: Devices):
+@device_router.post("/create/{user_id}", status_code=status.HTTP_201_CREATED)
+async def post_device(user_id: str, devices: Devices):
     project = project_col.find_one({"_id": ObjectId(devices.project_id)})
     if not project:
         await post_logs(
             logs=Logs(
-                l_type="error",
+                t_type=LogEnum.error,
                 description=f"Project with id {devices.project_id} is not found. Failed to create Device!",
-                level="device",
-                user_id=project["user_id"],
+                level=LevelEnum.device,
+                user_id=user_id,
                 updated_at=datetime.now(),
                 created_at=datetime.now(),
             )
@@ -71,9 +71,9 @@ async def post_device(devices: Devices):
     )
     await post_logs(
         logs=Logs(
-            l_type="message",
+            l_type=LogEnum.message,
             description=f"Created Device {device.device_name}  Successfully!",
-            level="device",
+            level=LevelEnum.device,
             user_id=project["user_id"],
             updated_at=datetime.now(),
             created_at=datetime.now(),
@@ -92,9 +92,9 @@ async def get_device(id: str, user_id: str):
     if not device:
         await post_logs(
             logs=Logs(
-                l_type="error",
+                t_type=LogEnum.error,
                 description=f"Device with this id: {id} is not found. Failed to get Device!",
-                level="device",
+                level=LevelEnum.device,
                 user_id=user_id,
                 updated_at=datetime.now(),
                 created_at=datetime.now(),
@@ -114,9 +114,9 @@ async def edit_device(id: str, user_id: str, devices: DeviceUpdate):
     if dev is None:
         await post_logs(
             logs=Logs(
-                l_type="error",
+                t_type=LogEnum.error,
                 description=f"Device with this id: {id} is not found. Failed to edit Device!",
-                level="device",
+                level=LevelEnum.device,
                 user_id=user_id,
                 updated_at=datetime.now(),
                 created_at=datetime.now(),
@@ -137,9 +137,9 @@ async def edit_device(id: str, user_id: str, devices: DeviceUpdate):
     devices_col.update_one({"_id": ObjectId(id)}, {"$set": dict(device)})
     await post_logs(
         logs=Logs(
-            l_type="error",
+            t_type=LogEnum.message,
             description=f"Successfully edited Device {id}",
-            level="device",
+            level=LevelEnum.device,
             user_id=user_id,
             updated_at=datetime.now(),
             created_at=datetime.now(),
@@ -155,9 +155,9 @@ async def delete_device(id: str, user_id: str):
     if device is None:
         await post_logs(
             logs=Logs(
-                l_type="error",
+                t_type=LogEnum.error,
                 description=f"Device with this id: {id} is not found. Failed to delete Device!",
-                level="device",
+                level=LevelEnum.device,
                 user_id=user_id,
                 updated_at=datetime.now(),
                 created_at=datetime.now(),
@@ -178,9 +178,9 @@ async def delete_device(id: str, user_id: str):
     devices_col.delete_one({"_id": ObjectId(id)})
     await post_logs(
         logs=Logs(
-            l_type="message",
+            l_type=LogEnum.message,
             description=f"Successfully deleted Device {id}",
-            level="device",
+            level=LevelEnum.device,
             user_id=user_id,
             updated_at=datetime.now(),
             created_at=datetime.now(),
@@ -195,9 +195,9 @@ async def get_all_charts(id: str, user_id: str):
     if not device:
         await post_logs(
             logs=Logs(
-                l_type="error",
+                t_type=LogEnum.error,
                 description=f"Device with this id: {id} is not found. Failed to get all Charts!",
-                level="device",
+                level=LevelEnum.device,
                 user_id=user_id,
                 updated_at=datetime.now(),
                 created_at=datetime.now(),
@@ -219,9 +219,9 @@ async def get_all_gauges(id: str, user_id: str):
     if not device:
         await post_logs(
             logs=Logs(
-                l_type="error",
+                t_type=LogEnum.error,
                 description=f"Device with this id: {id} is not found. Failed to get all Gauges!",
-                level="device",
+                level=LevelEnum.device,
                 user_id=user_id,
                 updated_at=datetime.now(),
                 created_at=datetime.now(),
@@ -243,9 +243,9 @@ async def get_all_switches(id: str, user_id: str):
     if not device:
         await post_logs(
             logs=Logs(
-                l_type="error",
+                t_type=LogEnum.error,
                 description=f"Device with this id: {id} is not found. Failed to get all Switch!",
-                level="device",
+                level=LevelEnum.device,
                 user_id=user_id,
                 updated_at=datetime.now(),
                 created_at=datetime.now(),
@@ -268,9 +268,9 @@ async def get_all_fields(id: str, user_id: str):
     if not user:
         await post_logs(
             logs=Logs(
-                l_type="error",
+                t_type=LogEnum.error,
                 description=f"User with this id: {id} is not found. Failed to get all Fields!",
-                level="device",
+                level=LevelEnum.device,
                 user_id=user_id,
                 updated_at=datetime.now(),
                 created_at=datetime.now(),

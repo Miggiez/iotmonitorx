@@ -63,9 +63,8 @@ class LevelEnum(str, Enum):
     device = "devices"
     user = "user"
     chart = "chart"
-    gaguge = "gauge"
+    gauge = "gauge"
     switch = "switch"
-    auth = "auth"
 
 
 class Logs(BaseModel):

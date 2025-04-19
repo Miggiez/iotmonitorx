@@ -19,7 +19,7 @@ import {
 	SelectValue,
 } from "./ui/select"
 import axios from "axios"
-import { useRefreshContext } from "@/store/generalContext"
+import { useRefreshContext, useUserContext } from "@/store/generalContext"
 import { FormCharts } from "./form-chart"
 import { FormGauges } from "./form-gauges"
 import { ChartFormProps, GaugeFormProps, SwitchButtonFormProps } from "@/types"
@@ -53,7 +53,7 @@ export function FormGaugesCharts({
 		name: "",
 		color: "black",
 	})
-
+	const { user } = useUserContext()
 	const [selection, setSelection] = useState<string>("gauge")
 	const [open, setOpen] = useState<boolean>(false)
 
@@ -82,7 +82,10 @@ export function FormGaugesCharts({
 		e.preventDefault()
 		await axios({
 			method: "post",
-			url: `http://localhost:8000/gauges/create`,
+			url: `http://localhost:8000/gauges/create/${user.userId}`,
+			headers: {
+				Authorization: `Bearer ${localStorage.getItem("token")}`,
+			},
 			data: {
 				topic: formGauges.topic,
 				title: formGauges.title,
@@ -104,7 +107,10 @@ export function FormGaugesCharts({
 		e.preventDefault()
 		await axios({
 			method: "post",
-			url: `http://localhost:8000/charts/create`,
+			url: `http://localhost:8000/charts/create/${user.userId}`,
+			headers: {
+				Authorization: `Bearer ${localStorage.getItem("token")}`,
+			},
 			data: {
 				title: formCharts.title,
 				topic: formCharts.topic,
@@ -124,7 +130,10 @@ export function FormGaugesCharts({
 		e.preventDefault()
 		await axios({
 			method: "post",
-			url: `http://localhost:8000/switches/create`,
+			url: `http://localhost:8000/switches/create/${user.userId}`,
+			headers: {
+				Authorization: `Bearer ${localStorage.getItem("token")}`,
+			},
 			data: {
 				switch_name: formSwitch.switch_name,
 				topic: formSwitch.topic,

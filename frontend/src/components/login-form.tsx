@@ -32,42 +32,42 @@ export function LoginForm({
 		e.preventDefault()
 		await axios({
 			method: "post",
-			url: "http://localhost:8000/auth/auth/login",
+			url: "http://localhost:8000/auth/login",
 			data: {
 				email: login.email,
 				password: login.password,
 			},
 		})
-			.then((data) => {
-				let res = data.data
-				let access_token = res.access_token
+			.then((res) => {
+				// console.log(res.data)
+				let access_token = res.data.access_token
 				localStorage.setItem("token", access_token)
 				navigate({ to: "/dashboard" })
 			})
-			.catch((e) => console.log(e.message))
+			.catch((e) => console.log(e.response.data))
 	}
 
-	// const verifyUser = async () => {
-	// 	let token = localStorage.getItem("token")
-	// 	await axios({
-	// 		method: "get",
-	// 		url: `http://localhost:8000/auth/verif`,
-	// 		headers: {
-	// 			Authorization: `Bearer ${token}`,
-	// 		},
-	// 	})
-	// 		.then(() => {
-	// 			navigate({ to: "/dashboard" })
-	// 		})
-	// 		.catch((e) => {
-	// 			console.log(e.message)
-	// 			throw redirect({ to: "/" })
-	// 		})
-	// }
+	const verifyUser = async () => {
+		let token = localStorage.getItem("token")
+		await axios({
+			method: "get",
+			url: `http://localhost:8000/auth/verif`,
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
+		})
+			.then(() => {
+				navigate({ to: "/dashboard" })
+			})
+			.catch((e) => {
+				console.log(e.message)
+				throw redirect({ to: "/" })
+			})
+	}
 
-	// useEffect(() => {
-	// 	verifyUser()
-	// }, [])
+	useEffect(() => {
+		verifyUser()
+	}, [])
 
 	return (
 		<div className={cn("flex flex-col gap-6", className)} {...props}>

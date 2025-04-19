@@ -12,10 +12,14 @@ import { RefreshContext } from "@/store/generalContext"
 import { useState } from "react"
 
 export const Route = createFileRoute("/dashboard")({
-	beforeLoad: async ({ context }) => {
-		await authenticate({ context })
-	},
+	beforeLoad: async ({ context }) => ({
+		getUserId: async () => await authenticate({ context }),
+	}),
 	component: AppLayoutComponent,
+	loader: async ({ context: { getUserId } }) => {
+		const userId = await getUserId()
+		return userId
+	},
 })
 
 function AppLayoutComponent() {
@@ -46,7 +50,7 @@ function AppLayoutComponent() {
 							</Breadcrumb>
 						</div>
 					</header>
-					<div className="flex flex-col w-[100%] h-[100%] p-4">
+					<div className="flex flex-col p-4">
 						<Outlet />
 					</div>
 				</SidebarInset>

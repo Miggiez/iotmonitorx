@@ -45,6 +45,9 @@ export function FormProject({
 			await axios({
 				method: "put",
 				url: `http://localhost:8000/projects/edit/${projectId}`,
+				headers: {
+					Authorization: `Bearer ${localStorage.getItem("token")}`,
+				},
 				data: {
 					title: title,
 					user_id: userId,
@@ -66,6 +69,9 @@ export function FormProject({
 			await axios({
 				method: "post",
 				url: "http://localhost:8000/projects/create/project",
+				headers: {
+					Authorization: `Bearer ${localStorage.getItem("token")}`,
+				},
 				data: {
 					title: title,
 					user_id: userId,

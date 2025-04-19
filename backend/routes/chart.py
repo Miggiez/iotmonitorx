@@ -3,9 +3,9 @@ from datetime import datetime
 from bson import ObjectId
 from configurations import chart_col, devices_col
 from fastapi import APIRouter, HTTPException, status
-from logs import post_logs
-from models.UserModel import ChartMeasurement, Logs
+from models.UserModel import ChartMeasurement, LevelEnum, LogEnum, Logs
 from pydantic import BaseModel
+from routes.logs import post_logs
 from schemas.ChartSchema import chart_individual_serial
 
 chart_router = APIRouter(prefix="/charts", tags=["charts"])
@@ -24,9 +24,9 @@ async def create_chart(user_id: str, charts: ChartMeasurement):
     if device is None:
         await post_logs(
             logs=Logs(
-                l_type="error",
+                l_type=LogEnum.error,
                 description=f"Device with id {charts.device_id} is not found. Failed to create Chart!",
-                level="chart",
+                level=LevelEnum.chart,
                 user_id=user_id,
                 updated_at=datetime.now(),
                 created_at=datetime.now(),
@@ -54,9 +54,9 @@ async def create_chart(user_id: str, charts: ChartMeasurement):
 
     await post_logs(
         logs=Logs(
-            l_type="message",
+            l_type=LogEnum.message,
             description=f"Created Chart {chart.title} Successfully!",
-            level="chart",
+            level=LevelEnum.chart,
             user_id=user_id,
             updated_at=datetime.now(),
             created_at=datetime.now(),
@@ -71,9 +71,9 @@ async def get_single_chart(id: str, user_id: str):
     if chart is None:
         await post_logs(
             logs=Logs(
-                l_type="error",
+                l_type=LogEnum.error,
                 description=f"Chart with id: {id} is not found. Failed to get Chart!",
-                level="chart",
+                level=LevelEnum.chart,
                 user_id=user_id,
                 updated_at=datetime.now(),
                 created_at=datetime.now(),
@@ -92,9 +92,9 @@ async def edit_chart(id: str, user_id: str, charts: ChartMeasurementEdit):
     if ch is None:
         await post_logs(
             logs=Logs(
-                l_type="error",
+                l_type=LogEnum.error,
                 description=f"Chart with id: {id} is not found. Failed to edit Chart!",
-                level="chart",
+                level=LevelEnum.chart,
                 user_id=user_id,
                 updated_at=datetime.now(),
                 created_at=datetime.now(),
@@ -117,9 +117,9 @@ async def edit_chart(id: str, user_id: str, charts: ChartMeasurementEdit):
     chart_col.update_one({"_id": ObjectId(id)}, {"$set": dict(chart)})
     await post_logs(
         logs=Logs(
-            l_type="message",
+            l_type=LogEnum.message,
             description=f"Successfully edited Chart {id}!",
-            level="chart",
+            level=LevelEnum.chart,
             user_id=user_id,
             updated_at=datetime.now(),
             created_at=datetime.now(),
@@ -134,9 +134,9 @@ async def delete_chart(id: str, user_id: str):
     if chart is None:
         await post_logs(
             logs=Logs(
-                l_type="error",
+                l_type=LogEnum.error,
                 description=f"Chart with id: {id} is not found. Failed to delete Chart!",
-                level="chart",
+                level=LevelEnum.chart,
                 user_id=user_id,
                 updated_at=datetime.now(),
                 created_at=datetime.now(),
@@ -153,9 +153,9 @@ async def delete_chart(id: str, user_id: str):
     chart_col.find_one_and_delete({"_id": ObjectId(id)})
     await post_logs(
         logs=Logs(
-            l_type="message",
+            l_type=LogEnum.message,
             description=f"Successfully deleted Chart {id} {chart['title']}",
-            level="chart",
+            level=LevelEnum.chart,
             user_id=user_id,
             updated_at=datetime.now(),
             created_at=datetime.now(),

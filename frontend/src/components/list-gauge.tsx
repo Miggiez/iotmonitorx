@@ -18,7 +18,10 @@ export const ListGauge = ({
 	const getGauges = async () => {
 		await axios({
 			method: "get",
-			url: `http://localhost:8000/devices/${deviceId}/getall/gauges`,
+			url: `http://localhost:8000/devices/${deviceId}/getall/gauges/${userId}`,
+			headers: {
+				Authorization: `Bearer ${localStorage.getItem("token")}`,
+			},
 		})
 			.then((res) => {
 				setGauges(res.data)

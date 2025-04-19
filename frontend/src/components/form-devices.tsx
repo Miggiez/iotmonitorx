@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useRefreshContext } from "@/store/generalContext"
+import { useRefreshContext, useUserContext } from "@/store/generalContext"
 import { useNavigate } from "@tanstack/react-router"
 import axios from "axios"
 import { PlusCircle } from "lucide-react"
@@ -19,6 +19,7 @@ import { useState } from "react"
 export function FormDevices({ projectId }: { projectId: string }) {
 	const navigate = useNavigate()
 	const [deviceName, setDeviceName] = useState<string>("")
+	const { user } = useUserContext()
 	const [open, setOpen] = useState<boolean>(false)
 	const { refresh, setRefresh } = useRefreshContext()
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -31,7 +32,10 @@ export function FormDevices({ projectId }: { projectId: string }) {
 		if (deviceName !== "") {
 			await axios({
 				method: "post",
-				url: "http://localhost:8000/devices/create/device",
+				url: `http://localhost:8000/devices/create/${user.userId}`,
+				headers: {
+					Authorization: `Bearer ${localStorage.getItem("token")}`,
+				},
 				data: {
 					device_name: deviceName,
 					project_id: projectId,

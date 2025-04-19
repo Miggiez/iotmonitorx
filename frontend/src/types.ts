@@ -1,5 +1,3 @@
-import { ChartConfig } from "./components/ui/chart"
-
 const Type_Sensor = {
 	humSensor: "humSensor",
 	lightSensor: "lightSensor",
@@ -85,4 +83,13 @@ export interface GaugeFormProps {
 	min_value: number
 	m_type: string
 	unit: string
+}
+
+export interface LogProps {
+	id: string
+	l_type: "error" | "message"
+	description: string
+	level: "project" | "devices" | "user" | "chart" | "chart" | "gauge" | "switch"
+	created_at: string
+	updated_at: string
 }

@@ -22,10 +22,16 @@ export const Route = createFileRoute("/dashboard/$deviceId")({
 		const res = await axios({
 			method: "get",
 			url: `http://localhost:8000/devices/${userId}/${deviceId}/getall/fields`,
+			headers: {
+				Authorization: `Bearer ${localStorage.getItem("token")}`,
+			},
 		})
 		const res2 = await axios({
 			method: "get",
-			url: `http://localhost:8000/devices/get/${deviceId}`,
+			url: `http://localhost:8000/devices/get/${deviceId}/${userId}`,
+			headers: {
+				Authorization: `Bearer ${localStorage.getItem("token")}`,
+			},
 		})
 		return {
 			fields: res.data,
@@ -49,6 +55,9 @@ function RouteComponent() {
 		await axios({
 			method: "delete",
 			url: `http://localhost:8000/devices/delete/${deviceId}/${userId}`,
+			headers: {
+				Authorization: `Bearer ${localStorage.getItem("token")}`,
+			},
 		})
 			.then(() => {
 				setRefresh(!refresh)
@@ -99,7 +108,12 @@ function RouteComponent() {
 				<h1 className="text-2xl font-bold mb-3">Charts</h1>
 			</div>
 			<Separator className="mb-10" />
-			<ListChart deviceId={deviceId} refresh={refresh} userId={userId} />
+			<ListChart
+				deviceId={deviceId}
+				refresh={refresh}
+				userId={userId}
+				fields={fileds}
+			/>
 		</div>
 	)
 }

@@ -7,16 +7,21 @@ export const ListChart = ({
 	deviceId,
 	refresh,
 	userId,
+	fields,
 }: {
 	deviceId: string
 	refresh: boolean
 	userId: string
+	fields: string[] | null
 }) => {
 	const [charts, setCharts] = useState<ChartProps[]>([])
 	const getCharts = async () => {
 		await axios({
 			method: "get",
-			url: `http://localhost:8000/devices/${deviceId}/getall/charts`,
+			url: `http://localhost:8000/devices/${deviceId}/getall/charts/${userId}`,
+			headers: {
+				Authorization: `Bearer ${localStorage.getItem("token")}`,
+			},
 		})
 			.then((res) => {
 				setCharts(res.data)
@@ -37,6 +42,7 @@ export const ListChart = ({
 					topic={chart.topic}
 					userId={userId}
 					deviceId={deviceId}
+					fields={fields}
 				/>
 			))}
 		</div>

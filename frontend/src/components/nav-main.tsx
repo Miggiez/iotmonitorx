@@ -1,6 +1,6 @@
 "use client"
 
-import { ChevronRight, Trash2 } from "lucide-react"
+import { ChevronRight, Settings2, Trash2 } from "lucide-react"
 
 import {
 	Collapsible,
@@ -34,6 +34,9 @@ export function NavMain({ userId }: { userId: string }) {
 		await axios({
 			method: "get",
 			url: `http://localhost:8000/user/${user_id}/getall/projects`,
+			headers: {
+				Authorization: `Bearer ${localStorage.getItem("token")}`,
+			},
 		})
 			.then((data) => {
 				setProjects(data.data)
@@ -45,6 +48,9 @@ export function NavMain({ userId }: { userId: string }) {
 		await axios({
 			method: "delete",
 			url: `http://localhost:8000/projects/delete/${projectId}`,
+			headers: {
+				Authorization: `Bearer ${localStorage.getItem("token")}`,
+			},
 		})
 			.then((res) => {
 				console.log(res.data)
@@ -117,7 +123,7 @@ export function NavMain({ userId }: { userId: string }) {
 					</ScrollArea>
 				</SidebarMenu>
 			</SidebarGroup>
-			{/* <SidebarGroup>
+			<SidebarGroup>
 				<SidebarMenu>
 					<SidebarGroupLabel>Settings</SidebarGroupLabel>
 					<Collapsible asChild className="group/collapsible">
@@ -133,17 +139,8 @@ export function NavMain({ userId }: { userId: string }) {
 								<SidebarMenuSub>
 									<SidebarMenuSubItem>
 										<SidebarMenuSubButton asChild>
-											<Link to=".">
-												<Terminal />
+											<Link to="/dashboard/logs">
 												<span>System Log</span>
-											</Link>
-										</SidebarMenuSubButton>
-									</SidebarMenuSubItem>
-									<SidebarMenuSubItem>
-										<SidebarMenuSubButton asChild>
-											<Link to=".">
-												<Bot />
-												<span>Control Log</span>
 											</Link>
 										</SidebarMenuSubButton>
 									</SidebarMenuSubItem>
@@ -152,7 +149,7 @@ export function NavMain({ userId }: { userId: string }) {
 						</SidebarMenuItem>
 					</Collapsible>
 				</SidebarMenu>
-			</SidebarGroup> */}
+			</SidebarGroup>
 		</>
 	)
 }

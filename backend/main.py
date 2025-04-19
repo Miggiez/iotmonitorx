@@ -13,6 +13,7 @@ from routes.auth import auth_router
 from routes.chart import chart_router
 from routes.devices import device_router
 from routes.gauge import gauge_router
+from routes.logs import log_router
 from routes.project import project_router
 from routes.switch import switch_router
 from routes.user import user_router
@@ -124,7 +125,7 @@ app.include_router(chart_router)
 app.include_router(auth_router)
 app.include_router(gauge_router)
 app.include_router(switch_router)
-
+app.include_router(log_router)
 
 if __name__ == "__main__":
     uvicorn.run(app=app, host="127.0.0.1", port=8000)

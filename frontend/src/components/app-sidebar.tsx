@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React from "react"
 
 import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
@@ -8,7 +8,7 @@ import {
 	SidebarHeader,
 	SidebarRail,
 } from "@/components/ui/sidebar"
-import { RefreshContext, useUserContext } from "@/store/generalContext"
+import { useUserContext } from "@/store/generalContext"
 
 // This is sample data.
 
@@ -21,7 +21,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 	return (
 		<Sidebar collapsible="icon" {...props}>
 			<SidebarHeader>
-				<NavUser user={{ name: userName, email: email, avatar: "" }} />
+				<NavUser usr={{ name: userName, email: email, avatar: "" }} />
 			</SidebarHeader>
 			<SidebarContent>
 				<NavMain userId={userId} />

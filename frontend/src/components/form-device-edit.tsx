@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button"
 import {
 	Dialog,
 	DialogContent,
-	DialogDescription,
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
@@ -10,7 +9,7 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useRefreshContext } from "@/store/generalContext"
+import { useRefreshContext, useUserContext } from "@/store/generalContext"
 import { useNavigate } from "@tanstack/react-router"
 import axios from "axios"
 import { Edit2 } from "lucide-react"
@@ -19,6 +18,7 @@ import { useEffect, useState } from "react"
 export function FormDevicesEdit({ deviceId }: { deviceId: string }) {
 	const navigate = useNavigate()
 	const [deviceName, setDeviceName] = useState<string>("")
+	const { user } = useUserContext()
 	const [open, setOpen] = useState<boolean>(false)
 	const { refresh, setRefresh } = useRefreshContext()
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -31,7 +31,10 @@ export function FormDevicesEdit({ deviceId }: { deviceId: string }) {
 		if (deviceName !== "") {
 			await axios({
 				method: "put",
-				url: `http://localhost:8000/devices/edit/${deviceId}`,
+				url: `http://localhost:8000/devices/edit/${deviceId}/${user.userId}`,
+				headers: {
+					Authorization: `Bearer ${localStorage.getItem("token")}`,
+				},
 				data: {
 					device_name: deviceName,
 				},
@@ -52,7 +55,10 @@ export function FormDevicesEdit({ deviceId }: { deviceId: string }) {
 	const getIndividualDevice = async () => {
 		await axios({
 			method: "get",
-			url: `http://localhost:8000/devices/get/${deviceId}`,
+			url: `http://localhost:8000/devices/get/${deviceId}/${user.userId}`,
+			headers: {
+				Authorization: `Bearer ${localStorage.getItem("token")}`,
+			},
 		})
 			.then((res) => {
 				setDeviceName(res.data.device_name)
