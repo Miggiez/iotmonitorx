@@ -315,7 +315,7 @@ async def get_chart_value(user_id: str, id: str, field: str, time: str):
     influx.switch_database(user_id)
     charts = list(
         *influx.query(
-            f'select "{field}" from "{id}" where time > now() - {time} and "{field}" != -1'
+            f'select "{field}" from "{id}" where time < now() - {time} and "{field}" != 1'
         )
     )
     return charts
@@ -343,6 +343,28 @@ async def get_gauge_value(user_id: str, id: str, field: str):
         )
     )
     return gauge
+
+
+@device_router.get("/{user_id}/{id}/switch/{field}")
+async def get_switch_value(user_id: str, id: str, field: str):
+    device = devices_col.find_one({"_id": ObjectId(id)})
+    user = user_col.find_one({"_id": ObjectId(user_id)})
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User with id {user_id} does not exist!",
+        )
+    if not device:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Device with id {id} does not exist!",
+        )
+    influx = influx_connection()
+    influx.switch_database(user_id)
+    switch = list(
+        *influx.query(f'select "{field}" from "{id}" group by * order by desc limit 1')
+    )
+    return switch
 
 
 @device_router.post("/button/press")

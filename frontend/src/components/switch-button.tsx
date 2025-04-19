@@ -46,9 +46,6 @@ export function SwitchButton({
 		await axios({
 			method: "get",
 			url: `http://localhost:8000/switches/get/${id}/${userId}`,
-			headers: {
-				Authorization: `Bearer ${localStorage.getItem("token")}`,
-			},
 		})
 			.then((res) => {
 				setFormSwitch({
@@ -57,7 +54,7 @@ export function SwitchButton({
 				})
 			})
 			.catch((e) => {
-				console.log(e.message)
+				console.log("getSingleSwitch", e.message)
 			})
 	}
 	const [open, setOpen] = useState<boolean>(false)
@@ -66,7 +63,7 @@ export function SwitchButton({
 		if (topic !== "") {
 			await axios({
 				method: "get",
-				url: `http://localhost:8000/devices/${userId}/${deviceId}/gauge/${topic}`,
+				url: `http://localhost:8000/devices/${userId}/${deviceId}/switch/${topic}`,
 				headers: {
 					Authorization: `Bearer ${localStorage.getItem("token")}`,
 				},
@@ -76,7 +73,7 @@ export function SwitchButton({
 					let value: boolean = top.pop()
 					setVal(value)
 				})
-				.catch((e) => console.log(e.message))
+				.catch((e) => console.log("getSwitchValue", e.message))
 		}
 	}
 	const [formSwitch, setFormSwitch] = useState<SwitchButtonFormProps>({
@@ -99,7 +96,7 @@ export function SwitchButton({
 			},
 		})
 			.then((res) => console.log(res.data))
-			.catch((e) => console.log(e.message))
+			.catch((e) => console.log("handleSubmitSwitch", e.message))
 		setRefresh(!refresh)
 		setOpen(false)
 		setFormSwitch({
@@ -186,7 +183,7 @@ export function SwitchButton({
 				console.log(res.data)
 				setRefresh(!refresh)
 			})
-			.catch((e) => console.log(e.message))
+			.catch((e) => console.log("deleteSwitch", e.message))
 	}
 
 	const publishSwitch = async (e: React.MouseEvent<HTMLDivElement>) => {
@@ -209,7 +206,7 @@ export function SwitchButton({
 					console.log(res.data)
 				})
 				.catch((e) => {
-					console.log(e.message)
+					console.log("publishSwitch", e.message)
 				})
 		}
 	}
@@ -225,7 +222,7 @@ export function SwitchButton({
 			}, 100)
 			return () => clearInterval(interval)
 		}
-	}, [])
+	}, [refresh])
 
 	return (
 		<Card className="w-[300px] cursor-pointer" onClick={publishSwitch}>

@@ -216,9 +216,6 @@ export default function LineGraph({
 		await axios({
 			method: "get",
 			url: `http://localhost:8000/devices/${userId}/${deviceId}/chart/${topic}/${time}`,
-			headers: {
-				Authorization: `Bearer ${localStorage.getItem("token")}`,
-			},
 		})
 			.then((res) => {
 				setData(res.data)
