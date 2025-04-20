@@ -79,6 +79,8 @@ async def post_device(user_id: str, devices: Devices):
             created_at=datetime.now(),
         )
     )
+    influx = influx_connection()
+    influx.switch_database(user_id)
     return {
         "message": f"Created Device {device.device_name}  Successfully!",
         "id": str(id),
@@ -290,6 +292,7 @@ async def get_all_fields(id: str, user_id: str):
     measurements = list(
         *influx.query(f'select * from "{id}" group by * order by desc limit 1;')
     )
+    influx.close()
     if measurements:
         fields = measurements[0]
         field_list = [*fields.keys()]

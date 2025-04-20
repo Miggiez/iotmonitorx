@@ -24,20 +24,19 @@ import {
 } from "./ui/select"
 import { Button } from "./ui/button"
 import { useRefreshContext } from "@/store/generalContext"
+import { getAllFields } from "@/api/fields"
 
 export function SwitchButton({
 	id,
 	switchName,
 	topic,
 	deviceId,
-	fields,
 	userId,
 }: {
 	id: string
 	switchName: string
 	topic: string
 	deviceId: string
-	fields: string[] | null
 	userId: string
 }) {
 	const [val, setVal] = useState<boolean>(false)
@@ -58,7 +57,7 @@ export function SwitchButton({
 			})
 	}
 	const [open, setOpen] = useState<boolean>(false)
-
+	const [fields, setFields] = useState<string[] | null>([])
 	const getSwitchValue = async () => {
 		if (topic !== "") {
 			await axios({
@@ -112,7 +111,15 @@ export function SwitchButton({
 
 	const switchEdit = () => {
 		return (
-			<Dialog open={open} onOpenChange={setOpen}>
+			<Dialog
+				open={open}
+				onOpenChange={async (value) => {
+					setOpen(value)
+					await getSingleSwitch()
+					let data = await getAllFields(userId, deviceId)
+					setFields(data)
+				}}
+			>
 				<DialogTrigger className="cursor-pointer">
 					<Edit2 className="text-yellow-600" />
 				</DialogTrigger>
@@ -211,9 +218,9 @@ export function SwitchButton({
 		}
 	}
 
-	useEffect(() => {
-		getSingleSwitch()
-	}, [refresh])
+	// useEffect(() => {
+	// 	getSingleSwitch()
+	// }, [refresh])
 
 	useEffect(() => {
 		if (topic !== "") {
@@ -225,7 +232,7 @@ export function SwitchButton({
 	}, [refresh])
 
 	return (
-		<Card className="w-[300px] cursor-pointer" onClick={publishSwitch}>
+		<Card className="w-[300px]">
 			<CardHeader className="flex items-center">
 				<CardTitle>{switchName}</CardTitle>
 				<div className="flex gap-5 items-center ml-auto">
@@ -238,10 +245,10 @@ export function SwitchButton({
 					</div>
 				</div>
 			</CardHeader>
-			<CardContent>
+			<CardContent className="cursor-pointer" onClick={publishSwitch}>
 				<div className="flex justify-center items-center space-x-5">
 					<div className={cn("w-5 h-5 bg-gray-400", val ? "" : "bg-red-400")} />
-					<Switch className="pointer-cursor" checked={val} />
+					<Switch className="cursor-pointer" checked={val} />
 					<div
 						className={cn(
 							"w-5 h-5 bg-gray-400 rounded-[50px]",

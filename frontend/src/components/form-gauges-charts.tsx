@@ -24,14 +24,9 @@ import { FormCharts } from "./form-chart"
 import { FormGauges } from "./form-gauges"
 import { ChartFormProps, GaugeFormProps, SwitchButtonFormProps } from "@/types"
 import { FormSwitch } from "./form-switch"
+import { getAllFields } from "@/api/fields"
 
-export function FormGaugesCharts({
-	deviceId,
-	fields,
-}: {
-	deviceId: string
-	fields: string[] | null
-}) {
+export function FormGaugesCharts({ deviceId }: { deviceId: string }) {
 	const { refresh, setRefresh } = useRefreshContext()
 	const [formGauges, setFormGauges] = useState<GaugeFormProps>({
 		topic: "",
@@ -56,6 +51,7 @@ export function FormGaugesCharts({
 	const { user } = useUserContext()
 	const [selection, setSelection] = useState<string>("gauge")
 	const [open, setOpen] = useState<boolean>(false)
+	const [fields, setFields] = useState<string[] | null>([])
 
 	const handleReset = () => {
 		setFormGauges({
@@ -210,7 +206,14 @@ export function FormGaugesCharts({
 	}
 
 	return (
-		<Dialog open={open} onOpenChange={setOpen}>
+		<Dialog
+			open={open}
+			onOpenChange={async (value) => {
+				setOpen(value)
+				let data = await getAllFields(user.userId, deviceId)
+				setFields(data)
+			}}
+		>
 			<DialogTrigger className="cursor-pointer hover:shadow-2xl p-1 hover:border-2 hover:rounded-[5px]">
 				<PlusCircle className="text-green-400" />
 			</DialogTrigger>

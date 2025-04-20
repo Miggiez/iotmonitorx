@@ -21,29 +21,20 @@ export const Route = createFileRoute("/dashboard/$deviceId")({
 		let userId = await getUserId()
 		const res = await axios({
 			method: "get",
-			url: `http://localhost:8000/devices/${userId}/${deviceId}/getall/fields`,
-			headers: {
-				Authorization: `Bearer ${localStorage.getItem("token")}`,
-			},
-		})
-		const res2 = await axios({
-			method: "get",
 			url: `http://localhost:8000/devices/get/${deviceId}/${userId}`,
 			headers: {
 				Authorization: `Bearer ${localStorage.getItem("token")}`,
 			},
 		})
 		return {
-			fields: res.data,
 			userId: userId,
-			device: { id: res2.data.id, deviceName: res2.data.device_name },
+			device: { id: res.data.id, deviceName: res.data.device_name },
 		}
 	},
 })
 
 function RouteComponent() {
 	const { deviceId } = Route.useParams()
-	const fileds: string[] | null = Route.useLoaderData().fields
 	const userId: string = Route.useLoaderData().userId
 	const device: { id: string; deviceName: string } =
 		Route.useLoaderData().device
@@ -77,7 +68,7 @@ function RouteComponent() {
 				</div>
 				<div className="flex gap-6 justify-center items-center ml-auto">
 					<ShareJWT deviceId={deviceId} userId={userId} />
-					<FormGaugesCharts deviceId={deviceId} fields={fileds} />
+					<FormGaugesCharts deviceId={deviceId} />
 					<FormDevicesEdit deviceId={deviceId} />
 					<div
 						onClick={deleteDevice}
@@ -88,32 +79,17 @@ function RouteComponent() {
 				</div>
 			</div>
 			<Separator className="mb-10" />
-			<ListSwitch
-				deviceId={deviceId}
-				refresh={refresh}
-				userId={userId}
-				fields={fileds}
-			/>
+			<ListSwitch deviceId={deviceId} refresh={refresh} userId={userId} />
 			<div className="flex w-[100%] items-center py-3 mt-10">
 				<h1 className="text-2xl font-bold mb-3">Gauges</h1>
 			</div>
 			<Separator className="mb-10" />
-			<ListGauge
-				deviceId={deviceId}
-				refresh={refresh}
-				userId={userId}
-				fields={fileds}
-			/>
+			<ListGauge deviceId={deviceId} refresh={refresh} userId={userId} />
 			<div className="flex w-[100%] items-center py-3 mt-10">
 				<h1 className="text-2xl font-bold mb-3">Charts</h1>
 			</div>
 			<Separator className="mb-10" />
-			<ListChart
-				deviceId={deviceId}
-				refresh={refresh}
-				userId={userId}
-				fields={fileds}
-			/>
+			<ListChart deviceId={deviceId} refresh={refresh} userId={userId} />
 		</div>
 	)
 }

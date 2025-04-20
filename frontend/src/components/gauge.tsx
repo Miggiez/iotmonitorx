@@ -23,6 +23,7 @@ import {
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
 import { Label } from "./ui/label"
+import { getAllFields } from "@/api/fields"
 
 interface GaugeProps {
 	topic: string
@@ -43,7 +44,6 @@ export default function Gauge({
 	unit = "H%",
 	userId,
 	deviceId,
-	fields,
 }: {
 	id: string
 	title: string
@@ -54,10 +54,10 @@ export default function Gauge({
 	unit: string
 	userId: string
 	deviceId: string
-	fields: string[] | null
 }) {
 	const [value, setValue] = useState<number>(0)
 	const { refresh, setRefresh } = useRefreshContext()
+	const [fields, setFields] = useState<string[] | null>([])
 	const handleTextValue = (value: string, unit: string) => {
 		return `${value} ${unit}`
 	}
@@ -139,7 +139,15 @@ export default function Gauge({
 
 	const gaugeEdit = () => {
 		return (
-			<Dialog open={open} onOpenChange={setOpen}>
+			<Dialog
+				open={open}
+				onOpenChange={async (value) => {
+					setOpen(value)
+					await getSingleGauge()
+					let data = await getAllFields(userId, deviceId)
+					setFields(data)
+				}}
+			>
 				<DialogTrigger className="cursor-pointer">
 					<Edit2 className="text-yellow-600" />
 				</DialogTrigger>
@@ -262,9 +270,9 @@ export default function Gauge({
 			})
 	}
 
-	useEffect(() => {
-		getSingleGauge()
-	}, [refresh])
+	// useEffect(() => {
+	// 	getSingleGauge()
+	// }, [refresh])
 
 	useEffect(() => {
 		if (topic !== "") {

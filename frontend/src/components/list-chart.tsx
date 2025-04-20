@@ -7,12 +7,10 @@ export const ListChart = ({
 	deviceId,
 	refresh,
 	userId,
-	fields,
 }: {
 	deviceId: string
 	refresh: boolean
 	userId: string
-	fields: string[] | null
 }) => {
 	const [charts, setCharts] = useState<ChartProps[]>([])
 	const getCharts = async () => {
@@ -42,7 +40,6 @@ export const ListChart = ({
 					topic={chart.topic}
 					userId={userId}
 					deviceId={deviceId}
-					fields={fields}
 				/>
 			))}
 		</div>

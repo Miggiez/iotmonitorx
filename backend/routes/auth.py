@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from typing import Annotated
 
 from configurations import user_col
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -62,6 +63,34 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         "role": user["role"],
         "email": user["email"],
     }
+
+
+def isAuthorized(token: Annotated[str, Depends(oauth2_scheme)]):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username = None
+        if int(datetime.now().timestamp()) > payload.get("exp"):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You are no longer authenticated",
+            )
+
+        username: str = payload.get("roleType")
+        if username is None:
+            raise credentials_exception
+
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User is not valid or token has expired",
+        )
+
+    return username
 
 
 # ------------------ Auth Routes ------------------ #

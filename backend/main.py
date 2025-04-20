@@ -6,6 +6,7 @@ import uvicorn
 from bson import ObjectId
 from configurations import devices_col, fast_mq, influx_connection, user_col
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from gmqtt import Client as MQTTClient
 from pymongo.errors import ConnectionFailure
 from pymongo.mongo_client import MongoClient
@@ -32,6 +33,14 @@ async def _lifespan(_app: FastAPI):
 
 
 app = FastAPI(lifespan=_lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # or specify your frontend URL like ["http://localhost:5173"]
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 def split_topic(topic: str):
@@ -85,15 +94,11 @@ async def message(
     user = user_col.find_one({"_id": ObjectId(user_id)})
     device = devices_col.find_one({"_id": ObjectId(dev_id)})
 
-    if user:
-        if device:
-            influx.create_database(user_id)
-        else:
-            print("There is no such device")
-            return
-    else:
-        print("There is no user with this id")
+    if not user:
         return
+    else:
+        if not device:
+            return
 
     try:
         if is_json(payload):

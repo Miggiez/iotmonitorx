@@ -7,12 +7,10 @@ export const ListSwitch = ({
 	deviceId,
 	refresh,
 	userId,
-	fields,
 }: {
 	deviceId: string
 	refresh: boolean
 	userId: string
-	fields: string[] | null
 }) => {
 	const [switches, setSwitches] = useState<SwitchButtonProps[]>([])
 	const getSwitches = async () => {
@@ -40,7 +38,6 @@ export const ListSwitch = ({
 					switchName={sw.switch_name}
 					topic={sw.topic}
 					deviceId={deviceId}
-					fields={fields}
 					userId={userId}
 				/>
 			))}

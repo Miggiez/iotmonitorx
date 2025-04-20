@@ -25,7 +25,7 @@ import {
 	SelectValue,
 } from "./ui/select"
 import { useRefreshContext } from "@/store/generalContext"
-import { Edit2, Trash2 } from "lucide-react"
+import { Edit2, Loader2, Trash2 } from "lucide-react"
 import { Input } from "./ui/input"
 import { Label } from "./ui/label"
 import {
@@ -37,6 +37,7 @@ import {
 	DialogHeader,
 } from "./ui/dialog"
 import { Button } from "./ui/button"
+import { getAllFields } from "@/api/fields"
 
 interface ChartPropsEdit {
 	title: string
@@ -52,7 +53,6 @@ export default function LineGraph({
 	topic,
 	userId,
 	deviceId,
-	fields,
 }: {
 	id: string
 	title: string
@@ -61,7 +61,6 @@ export default function LineGraph({
 	topic: string
 	userId: string
 	deviceId: string
-	fields: string[] | null
 }) {
 	const config: ChartConfig = {
 		[name]: {
@@ -72,7 +71,7 @@ export default function LineGraph({
 	const [data, setData] = useState<ChartProps[]>([])
 	const [time, setTime] = useState<string>("5m")
 	const { refresh, setRefresh } = useRefreshContext()
-
+	const [fields, setFields] = useState<string[] | null>([])
 	const [open, setOpen] = useState<boolean>(false)
 	const [formCharts, setFormCharts] = useState<ChartPropsEdit>({
 		title: "",
@@ -84,6 +83,14 @@ export default function LineGraph({
 	const handleFormChartChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const { name, value } = e.target
 		setFormCharts({ ...formCharts, [name]: value })
+	}
+
+	const Spin = () => {
+		return (
+			<div className="flex w-full justify-center">
+				<Loader2 className="animate-spin size-20" />
+			</div>
+		)
 	}
 
 	const handleSubmitChart = async (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -116,7 +123,15 @@ export default function LineGraph({
 
 	const chartEdit = () => {
 		return (
-			<Dialog open={open} onOpenChange={setOpen}>
+			<Dialog
+				open={open}
+				onOpenChange={async (value) => {
+					setOpen(value)
+					await getSingleChart()
+					let data = await getAllFields(userId, deviceId)
+					setFields(data)
+				}}
+			>
 				<DialogTrigger className="cursor-pointer">
 					<Edit2 className="text-yellow-600" />
 				</DialogTrigger>
@@ -260,9 +275,9 @@ export default function LineGraph({
 			})
 	}
 
-	useEffect(() => {
-		getSingleChart()
-	}, [refresh])
+	// useEffect(() => {
+	// 	getSingleChart()
+	// }, [refresh])
 
 	useEffect(() => {
 		if (topic !== "") {
@@ -272,6 +287,7 @@ export default function LineGraph({
 			return () => clearInterval(interval)
 		}
 	}, [refresh])
+
 	return (
 		<Card className="w-[600px]">
 			<CardHeader className="flex items-center">
@@ -287,34 +303,38 @@ export default function LineGraph({
 				</div>
 			</CardHeader>
 			<CardContent>
-				<ChartContainer config={config}>
-					<LineChart
-						data={data}
-						accessibilityLayer
-						margin={{
-							left: 12,
-							right: 12,
-						}}
-					>
-						<CartesianGrid vertical={false} />
-						<YAxis />
-						<XAxis
-							dataKey="time"
-							tickLine={false}
-							axisLine={false}
-							tickMargin={8}
-							tickFormatter={(value) => value.slice(0, 3)}
-						/>
-						<ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-						<Line
-							dataKey={name}
-							type="natural"
-							stroke={`var(--color-${name})`}
-							strokeWidth={2}
-							dot={false}
-						/>
-					</LineChart>
-				</ChartContainer>
+				{data.length < 10 ? (
+					Spin()
+				) : (
+					<ChartContainer config={config}>
+						<LineChart
+							data={data}
+							accessibilityLayer
+							margin={{
+								left: 12,
+								right: 12,
+							}}
+						>
+							<CartesianGrid vertical={false} />
+							<YAxis />
+							<XAxis
+								dataKey="time"
+								tickLine={false}
+								axisLine={false}
+								tickMargin={8}
+								tickFormatter={(value) => value.slice(0, 3)}
+							/>
+							<ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+							<Line
+								dataKey={name}
+								type="natural"
+								stroke={`var(--color-${name})`}
+								strokeWidth={2}
+								dot={false}
+							/>
+						</LineChart>
+					</ChartContainer>
+				)}
 			</CardContent>
 			<CardFooter>
 				<div className="grid grid-cols-4 items-center gap-4">
