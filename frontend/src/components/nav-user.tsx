@@ -17,7 +17,6 @@ import {
 	SidebarMenuItem,
 	useSidebar,
 } from "@/components/ui/sidebar"
-import { useNavigate } from "@tanstack/react-router"
 import axios from "axios"
 import { useUserContext } from "@/store/generalContext"
 
@@ -31,7 +30,7 @@ export function NavUser({
 	}
 }) {
 	const { isMobile } = useSidebar()
-	const navigate = useNavigate()
+	// const navigate = useNavigate()
 	const { user } = useUserContext()
 	const handleLogOut = async (e: React.MouseEvent<HTMLDivElement>) => {
 		e.preventDefault()
@@ -46,7 +45,7 @@ export function NavUser({
 				user_id: user.userId,
 			},
 		})
-		navigate({ to: "/" })
+		location.reload()
 	}
 
 	return (

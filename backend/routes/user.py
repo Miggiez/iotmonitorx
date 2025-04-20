@@ -1,7 +1,10 @@
+from datetime import datetime
+
 from bson import ObjectId
 from configurations import logs_col, user_col
 from fastapi import APIRouter, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
+from models.UserModel import User
 from passlib.context import CryptContext
 from schemas.LogSchema import log_list_serial
 from schemas.UserSchema import get_project_device, user_individual_serial
@@ -13,30 +16,30 @@ bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_bearer = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
-# @user_router.post("/create/user", status_code=status.HTTP_201_CREATED)
-# async def register_user(user: User):
-#     # Check if the username already exists
-#     if user_col.find_one({"username": user.username}):
-#         raise HTTPException(
-#             status_code=status.HTTP_400_BAD_REQUEST,
-#             detail=f"User with username {user.username} already exist, please use another username. Failed to create User!",
-#         )
+@user_router.post("/create/user", status_code=status.HTTP_201_CREATED)
+async def register_user(user: User):
+    # Check if the username already exists
+    if user_col.find_one({"username": user.username}):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"User with username {user.username} already exist, please use another username. Failed to create User!",
+        )
 
-#     # Hash the password
-#     hashed_password = bcrypt_context.hash(user.password)
-#     db_user = User(
-#         username=user.username,
-#         email=user.email,
-#         password=hashed_password,
-#         project=[],
-#         logs=[],
-#         role=user.role,
-#         created_at=datetime.now(),
-#         updated_at=datetime.now(),
-#     )  # Added email field
-#     # Store the user in the database
-#     user_col.insert_one(dict(db_user))
-#     return {"message": "User created successfully", "user": db_user.username}
+    # Hash the password
+    hashed_password = bcrypt_context.hash(user.password)
+    db_user = User(
+        username=user.username,
+        email=user.email,
+        password=hashed_password,
+        project=[],
+        logs=[],
+        role=user.role,
+        created_at=datetime.now(),
+        updated_at=datetime.now(),
+    )  # Added email field
+    # Store the user in the database
+    user_col.insert_one(dict(db_user))
+    return {"message": "User created successfully", "user": db_user.username}
 
 
 # @user_router.get("/get/users", status_code=status.HTTP_200_OK)

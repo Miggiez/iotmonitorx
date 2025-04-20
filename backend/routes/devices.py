@@ -315,7 +315,7 @@ async def get_chart_value(user_id: str, id: str, field: str, time: str):
     influx.switch_database(user_id)
     charts = list(
         *influx.query(
-            f'select "{field}" from "{id}" where time < now() - {time} and "{field}" != 1'
+            f'select "{field}" from "{id}" where time <= now() - {time} and "{field}" != 1'
         )
     )
     return charts
