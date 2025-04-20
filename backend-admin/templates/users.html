@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h1>👩‍💼 Admin Panel - User List</h1>
+  <p>Welcome, {{ username }} <a href="/register/user" class="btn btn-primary btn-primary">Register User</a></p>
+  <div class="container mt-4">
+    <table class="table table-bordered table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Created Time</th>
+                <th>Updated Time</th>
+                <th>Projects</th>
+                
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ user.username }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.role }}</td>
+                <td>{{ user.created_at }}</td>
+                <td>{{ user.updated_at }}</td>
+                <td>
+                    {% for project in user.projects %}
+                    {{ project.name }}<br>
+                        <!-- <a href="/project/{{ project.id }}">{{ project.name }}</a><br> -->
+                    {% endfor %}
+                
+                <td>
+                    <a href="/user/{{ user.id }}/edit" class="btn btn-primary btn-sm">Edit</a>
+                    <form method="post" action="/user/{{ user.id }}/delete" style="display:inline;">
+                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <!-- <a href="/dashboard" class="btn btn-secondary">← Back to Dashboard</a> -->
+</div>
+
+  {% endblock %}

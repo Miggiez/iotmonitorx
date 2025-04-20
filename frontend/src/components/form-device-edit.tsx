@@ -31,7 +31,7 @@ export function FormDevicesEdit({ deviceId }: { deviceId: string }) {
 		if (deviceName !== "") {
 			await axios({
 				method: "put",
-				url: `http://localhost:8000/devices/edit/${deviceId}/${user.userId}`,
+				url: `/api/devices/edit/${deviceId}/${user.userId}`,
 				headers: {
 					Authorization: `Bearer ${localStorage.getItem("token")}`,
 				},
@@ -55,7 +55,7 @@ export function FormDevicesEdit({ deviceId }: { deviceId: string }) {
 	const getIndividualDevice = async () => {
 		await axios({
 			method: "get",
-			url: `http://localhost:8000/devices/get/${deviceId}/${user.userId}`,
+			url: `/api/devices/get/${deviceId}/${user.userId}`,
 			headers: {
 				Authorization: `Bearer ${localStorage.getItem("token")}`,
 			},

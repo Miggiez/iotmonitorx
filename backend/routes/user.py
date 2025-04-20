@@ -28,9 +28,8 @@ async def register_user(user: User, role: Annotated[str, Depends(isAuthorized)])
     if role != "admin":
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="You are not authorized to this action!",
+            detail="You are not authorized to do this action!",
         )
-
     if user_col.find_one({"username": user.username}):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -67,7 +66,7 @@ async def find_user_by_id(user_id: str, role: Annotated[str, Depends(isAuthorize
     if role != "admin":
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="You are not authorized to this action!",
+            detail="You are not authorized to do this action!",
         )
 
     user = user_col.find_one({"_id": ObjectId(user_id)})
@@ -118,7 +117,7 @@ async def delete_user(user_id: str, role: Annotated[str, Depends(isAuthorized)])
     if role != "admin":
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="You are not authorized to this action!",
+            detail="You are not authorized to do this action!",
         )
     influx = influx_connection()
     user = user_col.find_one({"_id": ObjectId(user_id)})

@@ -16,7 +16,7 @@ export const ListSwitch = ({
 	const getSwitches = async () => {
 		await axios({
 			method: "get",
-			url: `http://localhost:8000/devices/${deviceId}/getall/switches/${userId}`,
+			url: `/api/devices/${deviceId}/getall/switches/${userId}`,
 			headers: {
 				Authorization: `Bearer ${localStorage.getItem("token")}`,
 			},

@@ -1,10 +1,12 @@
 from datetime import datetime
+from typing import Annotated
 
 from bson import ObjectId
 from configurations import chart_col, devices_col
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from models.UserModel import ChartMeasurement, LevelEnum, LogEnum, Logs
 from pydantic import BaseModel
+from routes.auth import isAuthorized
 from routes.logs import post_logs
 from schemas.ChartSchema import chart_individual_serial
 
@@ -19,7 +21,9 @@ class ChartMeasurementEdit(BaseModel):
 
 
 @chart_router.post("/create/{user_id}", status_code=status.HTTP_201_CREATED)
-async def create_chart(user_id: str, charts: ChartMeasurement):
+async def create_chart(
+    user_id: str, charts: ChartMeasurement, role: Annotated[str, Depends(isAuthorized)]
+):
     device = devices_col.find_one({"_id": ObjectId(charts.device_id)})
     if device is None:
         await post_logs(
@@ -66,7 +70,9 @@ async def create_chart(user_id: str, charts: ChartMeasurement):
 
 
 @chart_router.get("/get/{id}/{user_id}", status_code=status.HTTP_200_OK)
-async def get_single_chart(id: str, user_id: str):
+async def get_single_chart(
+    id: str, user_id: str, role: Annotated[str, Depends(isAuthorized)]
+):
     chart = chart_col.find_one({"_id": ObjectId(id)})
     if chart is None:
         await post_logs(
@@ -87,7 +93,12 @@ async def get_single_chart(id: str, user_id: str):
 
 
 @chart_router.put("/edit/{id}/{user_id}", status_code=status.HTTP_202_ACCEPTED)
-async def edit_chart(id: str, user_id: str, charts: ChartMeasurementEdit):
+async def edit_chart(
+    id: str,
+    user_id: str,
+    charts: ChartMeasurementEdit,
+    role: Annotated[str, Depends(isAuthorized)],
+):
     ch = chart_col.find_one({"_id": ObjectId(id)})
     if ch is None:
         await post_logs(
@@ -129,7 +140,9 @@ async def edit_chart(id: str, user_id: str, charts: ChartMeasurementEdit):
 
 
 @chart_router.delete("/delete/{id}/{user_id}", status_code=status.HTTP_200_OK)
-async def delete_chart(id: str, user_id: str):
+async def delete_chart(
+    id: str, user_id: str, role: Annotated[str, Depends(isAuthorized)]
+):
     chart = chart_col.find_one({"_id": ObjectId(id)})
     if chart is None:
         await post_logs(

@@ -97,7 +97,7 @@ export default function LineGraph({
 		e.preventDefault()
 		await axios({
 			method: "put",
-			url: `http://localhost:8000/charts/edit/${id}/${userId}`,
+			url: `/api/charts/edit/${id}/${userId}`,
 			headers: {
 				Authorization: `Bearer ${localStorage.getItem("token")}`,
 			},
@@ -230,7 +230,7 @@ export default function LineGraph({
 	const getChartsValue = async () => {
 		await axios({
 			method: "get",
-			url: `http://localhost:8000/devices/${userId}/${deviceId}/chart/${topic}/${time}`,
+			url: `/api/devices/${userId}/${deviceId}/chart/${topic}/${time}`,
 		})
 			.then((res) => {
 				setData(res.data)
@@ -242,7 +242,7 @@ export default function LineGraph({
 		e.preventDefault()
 		await axios({
 			method: "delete",
-			url: `http://localhost:8000/charts/delete/${id}/${userId}`,
+			url: `/api/charts/delete/${id}/${userId}`,
 			headers: {
 				Authorization: `Bearer ${localStorage.getItem("token")}`,
 			},
@@ -257,7 +257,7 @@ export default function LineGraph({
 	const getSingleChart = async () => {
 		await axios({
 			method: "get",
-			url: `http://localhost:8000/charts/get/${id}/${userId}`,
+			url: `/api/charts/get/${id}/${userId}`,
 			headers: {
 				Authorization: `Bearer ${localStorage.getItem("token")}`,
 			},

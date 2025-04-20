@@ -73,24 +73,17 @@ def isAuthorized(token: Annotated[str, Depends(oauth2_scheme)]):
     )
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username = None
-        if int(datetime.now().timestamp()) > payload.get("exp"):
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="You are no longer authenticated",
-            )
-
-        username: str = payload.get("roleType")
-        if username is None:
+        email = payload.get("sub")
+        if email is None:
             raise credentials_exception
-
     except JWTError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User is not valid or token has expired",
-        )
+        raise credentials_exception
 
-    return username
+    user = user_col.find_one({"email": email})
+    if user is None:
+        raise credentials_exception
+
+    return user["role"]
 
 
 # ------------------ Auth Routes ------------------ #

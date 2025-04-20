@@ -33,7 +33,7 @@ export function NavMain({ userId }: { userId: string }) {
 	const getProjects = async (user_id: string) => {
 		await axios({
 			method: "get",
-			url: `http://localhost:8000/user/${user_id}/getall/projects`,
+			url: `/api/user/${user_id}/getall/projects`,
 			headers: {
 				Authorization: `Bearer ${localStorage.getItem("token")}`,
 			},
@@ -47,7 +47,7 @@ export function NavMain({ userId }: { userId: string }) {
 	const deleteProject = async (projectId: string) => {
 		await axios({
 			method: "delete",
-			url: `http://localhost:8000/projects/delete/${projectId}`,
+			url: `/api/projects/delete/${projectId}`,
 			headers: {
 				Authorization: `Bearer ${localStorage.getItem("token")}`,
 			},

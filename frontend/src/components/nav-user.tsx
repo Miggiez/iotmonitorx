@@ -37,7 +37,7 @@ export function NavUser({
 		localStorage.removeItem("token")
 		await axios({
 			method: "post",
-			url: `http://localhost:8000/logs/create/log`,
+			url: `/api/logs/create/log`,
 			data: {
 				l_type: "message",
 				description: "Successfully Logged Out!",

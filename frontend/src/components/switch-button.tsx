@@ -44,7 +44,7 @@ export function SwitchButton({
 	const getSingleSwitch = async () => {
 		await axios({
 			method: "get",
-			url: `http://localhost:8000/switches/get/${id}/${userId}`,
+			url: `/api/switches/get/${id}/${userId}`,
 		})
 			.then((res) => {
 				setFormSwitch({
@@ -62,7 +62,7 @@ export function SwitchButton({
 		if (topic !== "") {
 			await axios({
 				method: "get",
-				url: `http://localhost:8000/devices/${userId}/${deviceId}/switch/${topic}`,
+				url: `/api/devices/${userId}/${deviceId}/switch/${topic}`,
 				headers: {
 					Authorization: `Bearer ${localStorage.getItem("token")}`,
 				},
@@ -84,7 +84,7 @@ export function SwitchButton({
 		e.preventDefault()
 		await axios({
 			method: "post",
-			url: `http://localhost:8000/switches/create/${userId}`,
+			url: `/api/switches/create/${userId}`,
 			headers: {
 				Authorization: `Bearer ${localStorage.getItem("token")}`,
 			},
@@ -181,7 +181,7 @@ export function SwitchButton({
 		e.preventDefault()
 		await axios({
 			method: "delete",
-			url: `http://localhost:8000/switches/delete/${id}/${userId}`,
+			url: `/api/switches/delete/${id}/${userId}`,
 			headers: {
 				Authorization: `Bearer ${localStorage.getItem("token")}`,
 			},
@@ -198,7 +198,7 @@ export function SwitchButton({
 		if (topic !== "") {
 			await axios({
 				method: "post",
-				url: `http://localhost:8000/devices/button/press`,
+				url: `/api/devices/button/press`,
 				headers: {
 					Authorization: `Bearer ${localStorage.getItem("token")}`,
 				},

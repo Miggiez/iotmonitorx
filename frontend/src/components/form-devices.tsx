@@ -32,7 +32,7 @@ export function FormDevices({ projectId }: { projectId: string }) {
 		if (deviceName !== "") {
 			await axios({
 				method: "post",
-				url: `http://localhost:8000/devices/create/${user.userId}`,
+				url: `/api/devices/create/${user.userId}`,
 				headers: {
 					Authorization: `Bearer ${localStorage.getItem("token")}`,
 				},

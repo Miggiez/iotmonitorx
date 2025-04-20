@@ -1,42 +1,107 @@
 services:
   # mqtt5 eclipse-mosquitto
-  nginxs:
-    image: nginx
-    container_name: nginxs
-    hostname: nginxs
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
     ports:
-      - "9000:80"
-    restart: unless-stopped
+      - "80:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - backend
+      - backend-admin
+    networks:
+      - iot-net
+
+  backend:
+    build: ./backend
+    container_name: backend
+    ports:
+      - "8002:8000"
+    depends_on:
+      - mongodb
+      - influxdb
+      - mqtt
+    # environment:
+    #   MONGO_URI: "mongodb://mongodb:27017/user_db"
+    networks:
+      - iot-net
+    volumes:
+      - ./backend:/app
+      - ./app/templates:/app/templates
+      - ./app/static:/app/static
+
+  backend-admin:
+    build: ./backend-admin
+    container_name: backend_admin
+    ports:
+      - "8003:8001"
+    depends_on:
+      - mongodb
+      - influxdb
+      - mqtt
+    # environment:
+    #   MONGO_URI: "mongodb://mongodb:27017/user_db"
+    networks:
+      - iot-net
+    volumes:
+      - ./backend-admin:/app
+      - ./backend-admin/templates:/app/templates
+      - ./backend-admin/static:/app/static
+
+  frontend:
+    build: ./frontend
+    container_name: react_frontend
+    ports:
+      - "3000:80" # Changed to standard HTTP port
+    depends_on:
+      - backend
+      - backend-admin
+    networks:
+      - iot-net
+
   mongodb:
-    image: mongodb/mongodb-community-server
-    container_name: mongodb
-    hostname: mongodb
+    image: mongo
+    container_name: mongodb1
     ports:
-      - "27018:27017"
-    restart: always
+      - "27019:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - iot-net
   mqtt:
     image: eclipse-mosquitto
     container_name: mqtt
     hostname: mqtt
     ports:
       - "1883:1883" #default mqtt port
+      - "9001:9001"
     volumes:
-      - ./mqtt/config:/mosquitto/config:rw
-      - ./mqtt/data:/mosquitto/data:rw
-      - ./mqtt/log:/mosquitto/log:rw
+      - ./mqtt/config:/mqtt/config
+      - ./mqtt/data:/mqtt/data
+      - ./mqtt/log:/mqtt/log
     restart: unless-stopped
+    networks:
+      - iot-net
 
   influxdb:
-    image: influxdb:1.7.4
+    image: influxdb:1.8
     container_name: influxdb
     restart: always
     ports:
       - "8086:8086"
     volumes:
-      - ./influxdb/data:/var/lib/influxdb2
+      - ./influxdb/data:/var/lib/influxdb
+    networks:
+      - iot-net
 
 # volumes for mapping data,config and log
 volumes:
+  mongo-data:
+  influxdb:
   config:
   data:
   log:
+
+networks:
+  iot-net:

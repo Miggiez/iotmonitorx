@@ -1,10 +1,12 @@
 from datetime import datetime
+from typing import Annotated
 
 from bson import ObjectId
 from configurations import devices_col, switch_col
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from models.UserModel import LevelEnum, LogEnum, Logs, SwitchButton
 from pydantic import BaseModel
+from routes.auth import isAuthorized
 from routes.logs import post_logs
 from schemas.SwitchSchema import switch_individual_serial
 
@@ -18,7 +20,9 @@ class SwitchButtonEdit(BaseModel):
 
 
 @switch_router.post("/create/{user_id}", status_code=status.HTTP_201_CREATED)
-async def create_switch(user_id: str, switches: SwitchButton):
+async def create_switch(
+    user_id: str, switches: SwitchButton, role: Annotated[str, Depends(isAuthorized)]
+):
     device = devices_col.find_one({"_id": ObjectId(switches.device_id)})
     if device is None:
         await post_logs(
@@ -62,7 +66,9 @@ async def create_switch(user_id: str, switches: SwitchButton):
 
 
 @switch_router.get("/get/{id}/{user_id}", status_code=status.HTTP_202_ACCEPTED)
-async def get_switch(id: str, user_id: str):
+async def get_switch(
+    id: str, user_id: str, role: Annotated[str, Depends(isAuthorized)]
+):
     switch = switch_col.find_one({"_id": ObjectId(id)})
     if switch is None:
         await post_logs(
@@ -84,7 +90,12 @@ async def get_switch(id: str, user_id: str):
 
 
 @switch_router.put("/edit/{id}/{user_id}", status_code=status.HTTP_202_ACCEPTED)
-async def edit_switch(id: str, user_id: str, switches: SwitchButtonEdit):
+async def edit_switch(
+    id: str,
+    user_id: str,
+    switches: SwitchButtonEdit,
+    role: Annotated[str, Depends(isAuthorized)],
+):
     sw = switch_col.find_one({"_id": ObjectId(id)})
     if sw is None:
         await post_logs(
@@ -124,7 +135,9 @@ async def edit_switch(id: str, user_id: str, switches: SwitchButtonEdit):
 
 
 @switch_router.delete("/delete/{id}/{user_id}", status_code=status.HTTP_200_OK)
-async def delete_switch(id: str, user_id: str):
+async def delete_switch(
+    id: str, user_id: str, role: Annotated[str, Depends(isAuthorized)]
+):
     switch = switch_col.find_one({"_id": ObjectId(id)})
     if switch is None:
         await post_logs(

@@ -16,7 +16,7 @@ export const ListChart = ({
 	const getCharts = async () => {
 		await axios({
 			method: "get",
-			url: `http://localhost:8000/devices/${deviceId}/getall/charts/${userId}`,
+			url: `/api/devices/${deviceId}/getall/charts/${userId}`,
 			headers: {
 				Authorization: `Bearer ${localStorage.getItem("token")}`,
 			},

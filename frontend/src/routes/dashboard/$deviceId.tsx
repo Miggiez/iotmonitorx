@@ -21,7 +21,7 @@ export const Route = createFileRoute("/dashboard/$deviceId")({
 		let userId = await getUserId()
 		const res = await axios({
 			method: "get",
-			url: `http://localhost:8000/devices/get/${deviceId}/${userId}`,
+			url: `/api/devices/get/${deviceId}/${userId}`,
 			headers: {
 				Authorization: `Bearer ${localStorage.getItem("token")}`,
 			},
@@ -45,7 +45,7 @@ function RouteComponent() {
 		e.preventDefault()
 		await axios({
 			method: "delete",
-			url: `http://localhost:8000/devices/delete/${deviceId}/${userId}`,
+			url: `/api/devices/delete/${deviceId}/${userId}`,
 			headers: {
 				Authorization: `Bearer ${localStorage.getItem("token")}`,
 			},

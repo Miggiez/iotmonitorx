@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Annotated
 
 from bson import ObjectId
 from configurations import (
@@ -11,9 +12,10 @@ from configurations import (
     switch_col,
     user_col,
 )
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from models.UserModel import Devices, LevelEnum, LogEnum, Logs
 from pydantic import BaseModel
+from routes.auth import isAuthorized
 from routes.logs import post_logs
 from schemas.ChartSchema import chart_list_serial
 from schemas.DeviceSchema import (
@@ -39,7 +41,9 @@ class DeviceUpdate(BaseModel):
 
 
 @device_router.post("/create/{user_id}", status_code=status.HTTP_201_CREATED)
-async def post_device(user_id: str, devices: Devices):
+async def post_device(
+    user_id: str, devices: Devices, role: Annotated[str, Depends(isAuthorized)]
+):
     project = project_col.find_one({"_id": ObjectId(devices.project_id)})
     if not project:
         await post_logs(
@@ -88,7 +92,9 @@ async def post_device(user_id: str, devices: Devices):
 
 
 @device_router.get("/get/{id}/{user_id}", status_code=status.HTTP_201_CREATED)
-async def get_device(id: str, user_id: str):
+async def get_device(
+    id: str, user_id: str, role: Annotated[str, Depends(isAuthorized)]
+):
     print(id)
     device = devices_col.find_one({"_id": ObjectId(id)})
     if not device:
@@ -111,7 +117,12 @@ async def get_device(id: str, user_id: str):
 
 
 @device_router.put("/edit/{id}/{user_id}", status_code=status.HTTP_200_OK)
-async def edit_device(id: str, user_id: str, devices: DeviceUpdate):
+async def edit_device(
+    id: str,
+    user_id: str,
+    devices: DeviceUpdate,
+    role: Annotated[str, Depends(isAuthorized)],
+):
     dev = devices_col.find_one({"_id": ObjectId(id)})
     if dev is None:
         await post_logs(
@@ -151,7 +162,9 @@ async def edit_device(id: str, user_id: str, devices: DeviceUpdate):
 
 
 @device_router.delete("/delete/{id}/{user_id}", status_code=status.HTTP_200_OK)
-async def delete_device(id: str, user_id: str):
+async def delete_device(
+    id: str, user_id: str, role: Annotated[str, Depends(isAuthorized)]
+):
     influx = influx_connection()
     device = devices_col.find_one({"_id": ObjectId(id)})
     if device is None:
@@ -192,7 +205,9 @@ async def delete_device(id: str, user_id: str):
 
 
 @device_router.get("/{id}/getall/charts/{user_id}", status_code=status.HTTP_200_OK)
-async def get_all_charts(id: str, user_id: str):
+async def get_all_charts(
+    id: str, user_id: str, role: Annotated[str, Depends(isAuthorized)]
+):
     device = devices_col.find_one({"_id": ObjectId(id)})
     if not device:
         await post_logs(
@@ -216,7 +231,9 @@ async def get_all_charts(id: str, user_id: str):
 
 
 @device_router.get("/{id}/getall/gauges/{user_id}", status_code=status.HTTP_200_OK)
-async def get_all_gauges(id: str, user_id: str):
+async def get_all_gauges(
+    id: str, user_id: str, role: Annotated[str, Depends(isAuthorized)]
+):
     device = devices_col.find_one({"_id": ObjectId(id)})
     if not device:
         await post_logs(
@@ -240,7 +257,9 @@ async def get_all_gauges(id: str, user_id: str):
 
 
 @device_router.get("/{id}/getall/switches/{user_id}", status_code=status.HTTP_200_OK)
-async def get_all_switches(id: str, user_id: str):
+async def get_all_switches(
+    id: str, user_id: str, role: Annotated[str, Depends(isAuthorized)]
+):
     device = devices_col.find_one({"_id": ObjectId(id)})
     if not device:
         await post_logs(
@@ -264,7 +283,9 @@ async def get_all_switches(id: str, user_id: str):
 
 
 @device_router.get("/{user_id}/{id}/getall/fields", status_code=status.HTTP_200_OK)
-async def get_all_fields(id: str, user_id: str):
+async def get_all_fields(
+    id: str, user_id: str, role: Annotated[str, Depends(isAuthorized)]
+):
     device = devices_col.find_one({"_id": ObjectId(id)})
     user = user_col.find_one({"_id": ObjectId(user_id)})
     if not user:
@@ -301,7 +322,13 @@ async def get_all_fields(id: str, user_id: str):
 
 
 @device_router.get("/{user_id}/{id}/chart/{field}/{time}")
-async def get_chart_value(user_id: str, id: str, field: str, time: str):
+async def get_chart_value(
+    user_id: str,
+    id: str,
+    field: str,
+    time: str,
+    role: Annotated[str, Depends(isAuthorized)],
+):
     device = devices_col.find_one({"_id": ObjectId(id)})
     user = user_col.find_one({"_id": ObjectId(user_id)})
     if not user:
@@ -325,7 +352,9 @@ async def get_chart_value(user_id: str, id: str, field: str, time: str):
 
 
 @device_router.get("/{user_id}/{id}/gauge/{field}")
-async def get_gauge_value(user_id: str, id: str, field: str):
+async def get_gauge_value(
+    user_id: str, id: str, field: str, role: Annotated[str, Depends(isAuthorized)]
+):
     device = devices_col.find_one({"_id": ObjectId(id)})
     user = user_col.find_one({"_id": ObjectId(user_id)})
     if not user:
@@ -349,7 +378,9 @@ async def get_gauge_value(user_id: str, id: str, field: str):
 
 
 @device_router.get("/{user_id}/{id}/switch/{field}")
-async def get_switch_value(user_id: str, id: str, field: str):
+async def get_switch_value(
+    user_id: str, id: str, field: str, role: Annotated[str, Depends(isAuthorized)]
+):
     device = devices_col.find_one({"_id": ObjectId(id)})
     user = user_col.find_one({"_id": ObjectId(user_id)})
     if not user:
@@ -371,7 +402,7 @@ async def get_switch_value(user_id: str, id: str, field: str):
 
 
 @device_router.post("/button/press")
-async def create_publish(topic: Publisher):
+async def create_publish(topic: Publisher, role: Annotated[str, Depends(isAuthorized)]):
     user_id = topic.user_id
     device_id = topic.device_id
     name = topic.name

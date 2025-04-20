@@ -32,7 +32,7 @@ export function LoginForm({
 		e.preventDefault()
 		await axios({
 			method: "post",
-			url: "http://localhost:8000/auth/login",
+			url: "/api/auth/login",
 			data: {
 				email: login.email,
 				password: login.password,
@@ -51,7 +51,7 @@ export function LoginForm({
 		let token = localStorage.getItem("token")
 		await axios({
 			method: "get",
-			url: `http://localhost:8000/auth/verif`,
+			url: `/api/auth/verif`,
 			headers: {
 				Authorization: `Bearer ${token}`,
 			},

@@ -1,9 +1,11 @@
 from datetime import datetime
+from typing import Annotated
 
 from bson import ObjectId
 from configurations import devices_col, gauge_col
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from models.UserModel import GaugeMeasurements, LevelEnum, LogEnum, Logs
+from routes.auth import isAuthorized
 from routes.logs import post_logs
 from schemas.GaugeSchema import gauge_individual_serial
 
@@ -11,7 +13,9 @@ gauge_router = APIRouter(prefix="/gauges", tags=["gauges"])
 
 
 @gauge_router.post("/create/{user_id}", status_code=status.HTTP_201_CREATED)
-async def create_gauge(user_id: str, gauges: GaugeMeasurements):
+async def create_gauge(
+    user_id: str, gauges: GaugeMeasurements, role: Annotated[str, Depends(isAuthorized)]
+):
     device = devices_col.find_one({"_id": ObjectId(gauges.device_id)})
     if device is None:
         await post_logs(
@@ -59,7 +63,7 @@ async def create_gauge(user_id: str, gauges: GaugeMeasurements):
 
 
 @gauge_router.get("/get/{id}/{user_id}", status_code=status.HTTP_202_ACCEPTED)
-async def get_gauge(id: str, user_id: str):
+async def get_gauge(id: str, user_id: str, role: Annotated[str, Depends(isAuthorized)]):
     gauge = gauge_col.find_one({"_id": ObjectId(id)})
     if gauge is None:
         await post_logs(
@@ -81,7 +85,12 @@ async def get_gauge(id: str, user_id: str):
 
 
 @gauge_router.put("/edit/{id}/{user_id}", status_code=status.HTTP_202_ACCEPTED)
-async def edit_gauge(id: str, user_id: str, gauges: GaugeMeasurements):
+async def edit_gauge(
+    id: str,
+    user_id: str,
+    gauges: GaugeMeasurements,
+    role: Annotated[str, Depends(isAuthorized)],
+):
     ga = gauge_col.find_one({"_id": ObjectId(id)})
     if ga is None:
         await post_logs(
@@ -125,7 +134,9 @@ async def edit_gauge(id: str, user_id: str, gauges: GaugeMeasurements):
 
 
 @gauge_router.delete("/delete/{id}/{user_id}", status_code=status.HTTP_200_OK)
-async def delete_gauge(id: str, user_id: str):
+async def delete_gauge(
+    id: str, user_id: str, role: Annotated[str, Depends(isAuthorized)]
+):
     gauge = gauge_col.find_one({"_id": ObjectId(id)})
     if gauge is None:
         await post_logs(

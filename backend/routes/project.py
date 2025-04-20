@@ -1,9 +1,11 @@
 from datetime import datetime
+from typing import Annotated
 
 from bson import ObjectId
 from configurations import devices_col, project_col, user_col
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from models.UserModel import LevelEnum, LogEnum, Logs, Project
+from routes.auth import isAuthorized
 from routes.logs import post_logs
 from schemas.DeviceSchema import device_list_serial
 from schemas.ProjectSchema import delete_devices_array
@@ -12,7 +14,7 @@ project_router = APIRouter(prefix="/projects", tags=["projects"])
 
 
 @project_router.post("/create/project", status_code=status.HTTP_201_CREATED)
-async def post_project(projects: Project):
+async def post_project(projects: Project, role: Annotated[str, Depends(isAuthorized)]):
     user = user_col.find_one({"_id": ObjectId(projects.user_id)})
     if not user:
         await post_logs(
@@ -56,7 +58,9 @@ async def post_project(projects: Project):
 
 
 @project_router.put("/edit/{id}", status_code=status.HTTP_200_OK)
-async def edit_project(id: str, projects: Project):
+async def edit_project(
+    id: str, projects: Project, role: Annotated[str, Depends(isAuthorized)]
+):
     proj = project_col.find_one({"_id": ObjectId(id)})
     if not proj:
         await post_logs(
@@ -96,7 +100,7 @@ async def edit_project(id: str, projects: Project):
 
 
 @project_router.delete("/delete/{id}", status_code=status.HTTP_200_OK)
-async def delete_project(id: str):
+async def delete_project(id: str, role: Annotated[str, Depends(isAuthorized)]):
     project = project_col.find_one({"_id": ObjectId(id)})
     if project is None:
         await post_logs(
@@ -133,7 +137,7 @@ async def delete_project(id: str):
 
 
 @project_router.get("/{id}/getall/devices", status_code=status.HTTP_200_OK)
-async def get_devices(id: str):
+async def get_devices(id: str, role: Annotated[str, Depends(isAuthorized)]):
     project = project_col.find_one({"_id": ObjectId(id)})
     if not project:
         await post_logs(

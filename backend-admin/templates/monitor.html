@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-3">
+    <h2>MQTT Message Monitor</h2>
+    <div class="card">
+        <div class="card-body">
+            <table class="table" id="messageTable">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Topic</th>
+                        <th>Payload</th>
+                    </tr>
+                </thead>
+                <tbody id="messageBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+function updateMessages() {
+    fetch('/api/messages')
+        .then(response => response.json())
+        .then(messages => {
+            const tbody = document.getElementById('messageBody');
+            tbody.innerHTML = '';
+            messages.reverse().forEach(msg => {
+                const row = tbody.insertRow();
+                row.insertCell(0).textContent = msg.timestamp;
+                row.insertCell(1).textContent = msg.topic;
+                row.insertCell(2).textContent = JSON.stringify(msg.payload);
+            });
+        });
+}
+
+// Update every 2 seconds
+setInterval(updateMessages, 2000);
+updateMessages();
+</script>
+{% endblock %}

@@ -11,7 +11,7 @@ export const authenticate = async ({
 	try {
 		let res = await axios({
 			method: "get",
-			url: `http://localhost:8000/auth/verif`,
+			url: `/api/auth/verif`,
 			headers: {
 				Authorization: `Bearer ${token}`,
 			},

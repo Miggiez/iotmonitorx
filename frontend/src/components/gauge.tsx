@@ -64,7 +64,7 @@ export default function Gauge({
 	const getGaugeValue = async () => {
 		await axios({
 			method: "get",
-			url: `http://localhost:8000/devices/${userId}/${deviceId}/gauge/${topic}`,
+			url: `/api/devices/${userId}/${deviceId}/gauge/${topic}`,
 			headers: {
 				Authorization: `Bearer ${localStorage.getItem("token")}`,
 			},
@@ -81,7 +81,7 @@ export default function Gauge({
 		e.preventDefault()
 		await axios({
 			method: "delete",
-			url: `http://localhost:8000/gauges/delete/${id}/${userId}`,
+			url: `/api/gauges/delete/${id}/${userId}`,
 			headers: {
 				Authorization: `Bearer ${localStorage.getItem("token")}`,
 			},
@@ -110,7 +110,7 @@ export default function Gauge({
 		e.preventDefault()
 		await axios({
 			method: "post",
-			url: `http://localhost:8000/gauges/edit/${id}/${userId}`,
+			url: `/api/gauges/edit/${id}/${userId}`,
 			headers: {
 				Authorization: `Bearer ${localStorage.getItem("token")}`,
 			},
@@ -250,7 +250,7 @@ export default function Gauge({
 	const getSingleGauge = async () => {
 		await axios({
 			method: "get",
-			url: `http://localhost:8000/gauges/get/${id}/${userId}`,
+			url: `/api/gauges/get/${id}/${userId}`,
 			headers: {
 				Authorization: `Bearer ${localStorage.getItem("token")}`,
 			},

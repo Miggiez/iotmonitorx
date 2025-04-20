@@ -168,7 +168,7 @@ export function LogDataTable({ userId }: { userId: string }) {
 										e.preventDefault()
 										await axios({
 											method: "delete",
-											url: `http://localhost:8000/logs/delete/${log.id}`,
+											url: `/api/logs/delete/${log.id}`,
 											headers: {
 												Authorization: `Bearer ${localStorage.getItem("token")}`,
 											},
@@ -212,7 +212,7 @@ export function LogDataTable({ userId }: { userId: string }) {
 	const getLogData = async () => {
 		await axios({
 			method: "get",
-			url: `http://localhost:8000/user/${userId}/getall/logs`,
+			url: `/api/user/${userId}/getall/logs`,
 			headers: {
 				Authorization: `Bearer ${localStorage.getItem("token")}`,
 			},
@@ -331,7 +331,7 @@ export function LogDataTable({ userId }: { userId: string }) {
 								const logId = value._valuesCache.id
 								await axios({
 									method: "delete",
-									url: `http://localhost:8000/logs/delete/${logId}`,
+									url: `/api/logs/delete/${logId}`,
 									headers: {
 										Authorization: `Bearer ${localStorage.getItem("token")}`,
 									},

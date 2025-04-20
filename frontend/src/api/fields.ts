@@ -4,7 +4,7 @@ export const getAllFields = async (userId: string, deviceId: string) => {
 	try {
 		let res = await axios({
 			method: "get",
-			url: `http://localhost:8000/devices/${userId}/${deviceId}/getall/fields`,
+			url: `/api/devices/${userId}/${deviceId}/getall/fields`,
 			headers: {
 				Authorization: `Bearer ${localStorage.getItem("token")}`,
 			},

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+<form method="post" class="container mt-3">
+    <div class="form-group">
+        <label for="username">Username:</label>
+        <input type="text" class="form-control" id="username" name="username" value="{{ user_data.username | default('') }}" placeholder="Enter username">
+    </div>
+    <div class="mb-3">
+        <label for="email">Email:</label>
+        <input type="email" class="form-control" id="email" name="email" value="{{ user_data.email | default('') }}" placeholder="Enter email">
+    </div>
+    <div class="mb-3">
+        <label for="password">New Password:</label>
+        <input type="password" class="form-control" id="password" name="password" placeholder="Enter new password" required>
+    </div>
+    <div class="mb-3">
+        <label for="role" class="form-label">Role:</label>
+        <select id="role" name="role" class="form-select" required>
+            <option value="user" {% if user_data.role == 'user' %}selected{% endif %}>User</option>
+            <option value="admin" {% if user_data.role == 'admin' %}selected{% endif %}>Admin</option>
+        </select>
+    </div>
+    
+    <div class="d-grid gap-2">
+    <button type="submit" class="btn btn-primary mt-3">Save User</button>
+    </div>
+</form>
+<br>
+<a href="/users" class="btn btn-secondary">← Back to Users</a>
+{% endblock %}

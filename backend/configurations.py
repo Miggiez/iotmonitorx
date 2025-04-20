@@ -20,7 +20,7 @@ def influx_connection():
     return influx
 
 
-uri = "mongodb://localhost:27018"
+uri = "mongodb://localhost:27019"
 
 client = MongoClient(uri)
 

@@ -78,7 +78,7 @@ export function FormGaugesCharts({ deviceId }: { deviceId: string }) {
 		e.preventDefault()
 		await axios({
 			method: "post",
-			url: `http://localhost:8000/gauges/create/${user.userId}`,
+			url: `/api/gauges/create/${user.userId}`,
 			headers: {
 				Authorization: `Bearer ${localStorage.getItem("token")}`,
 			},
@@ -103,7 +103,7 @@ export function FormGaugesCharts({ deviceId }: { deviceId: string }) {
 		e.preventDefault()
 		await axios({
 			method: "post",
-			url: `http://localhost:8000/charts/create/${user.userId}`,
+			url: `/api/charts/create/${user.userId}`,
 			headers: {
 				Authorization: `Bearer ${localStorage.getItem("token")}`,
 			},
@@ -126,7 +126,7 @@ export function FormGaugesCharts({ deviceId }: { deviceId: string }) {
 		e.preventDefault()
 		await axios({
 			method: "post",
-			url: `http://localhost:8000/switches/create/${user.userId}`,
+			url: `/api/switches/create/${user.userId}`,
 			headers: {
 				Authorization: `Bearer ${localStorage.getItem("token")}`,
 			},
