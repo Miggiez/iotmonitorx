@@ -285,7 +285,7 @@ export default function LineGraph({
 				</div>
 			</CardHeader>
 			<CardContent>
-				{data.length < 10 ? (
+				{data.length < 5 ? (
 					Spin()
 				) : (
 					<ChartContainer config={config}>
@@ -295,16 +295,18 @@ export default function LineGraph({
 							margin={{
 								left: 12,
 								right: 12,
+								top: 12,
+								bottom: 12,
 							}}
 						>
 							<CartesianGrid vertical={false} />
 							<YAxis />
 							<XAxis
-								dataKey="time"
-								tickLine={false}
-								axisLine={false}
-								tickMargin={8}
-								tickFormatter={(value) => value.slice(0, 3)}
+								dataKey={"time"}
+								tickLine={true}
+								axisLine={true}
+								tickMargin={20}
+								tickFormatter={(value) => value.slice(11, 19)}
 							/>
 							<ChartTooltip cursor={false} content={<ChartTooltipContent />} />
 							<Line
