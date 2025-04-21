@@ -12,7 +12,7 @@ RUN bun install
 
 # Copy the rest of the application files
 COPY . .
-
+    
 # Build the application
 RUN bun run build
 
@@ -21,6 +21,10 @@ FROM nginx:alpine
 
 # Copy built React files from previous stage to Nginx web root
 COPY --from=build /app/dist /usr/share/nginx/html
+
+RUN rm /etc/nginx/conf.d/default.conf
+
+COPY nginx/nginx.conf /etc/nginx/conf.d
 
 # Expose port for serving the application
 EXPOSE 80

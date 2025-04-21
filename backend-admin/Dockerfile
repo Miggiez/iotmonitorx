@@ -1,5 +1,5 @@
 # Use an official Python base image
-FROM python:latest
+FROM python:alpine
 
 # Set the working directory
 WORKDIR /app
@@ -15,4 +15,4 @@ COPY . .
 ENV PYTHONPATH=/app
 
 # Set the command to run FastAPI
-CMD ["uvicorn", "admin_main:app", "--host", "0.0.0.0", "--port", "8001"]
+CMD ["uvicorn", "admin_main:app", "--host", "0.0.0.0", "--port", "7000"]

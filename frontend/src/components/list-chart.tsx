@@ -35,7 +35,6 @@ export const ListChart = ({
 				<LineGraph
 					id={chart.id}
 					title={chart.title}
-					name={chart.name}
 					color={chart.color}
 					topic={chart.topic}
 					userId={userId}

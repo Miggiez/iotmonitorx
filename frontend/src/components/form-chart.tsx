@@ -37,18 +37,6 @@ export function FormCharts({
 				/>
 			</div>
 			<div className="grid grid-cols-4 items-center gap-4">
-				<Label htmlFor="name" className="text-right">
-					Label Name
-				</Label>
-				<Input
-					onChange={handleFormChartChange}
-					name="name"
-					value={formCharts.name}
-					className="col-span-3"
-					required
-				/>
-			</div>
-			<div className="grid grid-cols-4 items-center gap-4">
 				<Label>Topic</Label>
 				<Select
 					onValueChange={(topic) => {

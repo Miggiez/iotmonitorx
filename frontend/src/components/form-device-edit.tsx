@@ -48,7 +48,7 @@ export function FormDevicesEdit({ deviceId }: { deviceId: string }) {
 					})
 					setOpen(false)
 				})
-				.catch((e) => console.log(e.message))
+				.catch((e) => console.log(e.response.data.detail))
 		}
 	}
 

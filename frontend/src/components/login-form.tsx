@@ -14,6 +14,7 @@ import { Suspense, useEffect, useState } from "react"
 import { LoginProps } from "@/types"
 import axios from "axios"
 import { redirect, useNavigate } from "@tanstack/react-router"
+import { toast } from "sonner"
 
 export function LoginForm({
 	className,
@@ -40,11 +41,18 @@ export function LoginForm({
 		})
 			.then((res) => {
 				// console.log(res.data)
+				localStorage.removeItem("token")
 				let access_token = res.data.access_token
 				localStorage.setItem("token", access_token)
 				navigate({ to: "/dashboard" })
 			})
-			.catch((e) => console.log(e.response.data))
+			.catch((e) => {
+				if (e.status === 502) {
+					toast("Server is not yet ready!")
+				} else {
+					toast("Your email or password is incorrect!")
+				}
+			})
 	}
 
 	const verifyUser = async () => {

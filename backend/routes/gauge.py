@@ -5,11 +5,21 @@ from bson import ObjectId
 from configurations import devices_col, gauge_col
 from fastapi import APIRouter, Depends, HTTPException, status
 from models.UserModel import GaugeMeasurements, LevelEnum, LogEnum, Logs
+from pydantic import BaseModel
 from routes.auth import isAuthorized
 from routes.logs import post_logs
 from schemas.GaugeSchema import gauge_individual_serial
 
 gauge_router = APIRouter(prefix="/gauges", tags=["gauges"])
+
+
+class GaugeMeasurementEdit(BaseModel):
+    topic: str
+    title: str
+    max_value: float
+    min_value: float
+    m_type: str
+    unit: str
 
 
 @gauge_router.post("/create/{user_id}", status_code=status.HTTP_201_CREATED)
@@ -88,7 +98,7 @@ async def get_gauge(id: str, user_id: str, role: Annotated[str, Depends(isAuthor
 async def edit_gauge(
     id: str,
     user_id: str,
-    gauges: GaugeMeasurements,
+    gauges: GaugeMeasurementEdit,
     role: Annotated[str, Depends(isAuthorized)],
 ):
     ga = gauge_col.find_one({"_id": ObjectId(id)})
@@ -117,7 +127,7 @@ async def edit_gauge(
         unit=gauges.unit,
         device_id=ga["device_id"],
         updated_at=datetime.now(),
-        created_at=ga["device_id"],
+        created_at=ga["created_at"],
     )
     gauge_col.update_one({"_id": ObjectId(id)}, {"$set": dict(gauge)})
     await post_logs(

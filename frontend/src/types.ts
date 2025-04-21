@@ -23,7 +23,6 @@ export interface ChartProps {
 	id: string
 	title: string
 	topic: string
-	name: string
 	color: string
 	created_at: string
 	updated_at: string
@@ -72,7 +71,6 @@ export interface SwitchButtonFormProps {
 export interface ChartFormProps {
 	title: string
 	topic: string
-	name: string
 	color: string
 }
 

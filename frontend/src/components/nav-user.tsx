@@ -30,7 +30,6 @@ export function NavUser({
 	}
 }) {
 	const { isMobile } = useSidebar()
-	// const navigate = useNavigate()
 	const { user } = useUserContext()
 	const handleLogOut = async (e: React.MouseEvent<HTMLDivElement>) => {
 		e.preventDefault()

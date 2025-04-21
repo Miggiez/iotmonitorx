@@ -1,5 +1,6 @@
 import { UserContext } from "@/store/generalContext"
 import { Outlet, createRootRouteWithContext } from "@tanstack/react-router"
+import { Toaster } from "sonner"
 
 type RouterContext = {
 	authen: UserContext
@@ -13,6 +14,7 @@ function RootComponent() {
 	return (
 		<>
 			<Outlet />
+			<Toaster />
 		</>
 	)
 }

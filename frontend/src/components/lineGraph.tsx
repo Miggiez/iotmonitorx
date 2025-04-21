@@ -42,29 +42,28 @@ import { getAllFields } from "@/api/fields"
 interface ChartPropsEdit {
 	title: string
 	topic: string
-	name: string
 	color: string
 }
 export default function LineGraph({
 	id,
 	title,
-	name,
 	color,
 	topic,
 	userId,
 	deviceId,
+	// fields,
 }: {
 	id: string
 	title: string
-	name: string
 	color: string
 	topic: string
 	userId: string
 	deviceId: string
+	// fields: string[] | null
 }) {
 	const config: ChartConfig = {
-		[name]: {
-			label: `${name}`,
+		[topic]: {
+			label: `${topic}`,
 			color: `${color}`,
 		},
 	}
@@ -76,7 +75,6 @@ export default function LineGraph({
 	const [formCharts, setFormCharts] = useState<ChartPropsEdit>({
 		title: "",
 		topic: "",
-		name: "",
 		color: "black",
 	})
 
@@ -104,7 +102,6 @@ export default function LineGraph({
 			data: {
 				title: formCharts.title,
 				topic: formCharts.topic,
-				name: formCharts.name,
 				color: formCharts.color,
 				device_id: deviceId,
 			},
@@ -116,7 +113,6 @@ export default function LineGraph({
 		setFormCharts({
 			title: "",
 			topic: "",
-			name: "",
 			color: "black",
 		})
 	}
@@ -148,18 +144,6 @@ export default function LineGraph({
 								onChange={handleFormChartChange}
 								name="title"
 								value={formCharts.title}
-								className="col-span-3"
-								required
-							/>
-						</div>
-						<div className="grid grid-cols-4 items-center gap-4">
-							<Label htmlFor="name" className="text-right">
-								Label Name
-							</Label>
-							<Input
-								onChange={handleFormChartChange}
-								name="name"
-								value={formCharts.name}
 								className="col-span-3"
 								required
 							/>
@@ -266,7 +250,6 @@ export default function LineGraph({
 				setFormCharts({
 					title: res.data.title,
 					topic: res.data.topic,
-					name: res.data.name,
 					color: res.data.color,
 				})
 			})
@@ -287,7 +270,6 @@ export default function LineGraph({
 			return () => clearInterval(interval)
 		}
 	}, [refresh])
-
 	return (
 		<Card className="w-[600px]">
 			<CardHeader className="flex items-center">
@@ -326,9 +308,9 @@ export default function LineGraph({
 							/>
 							<ChartTooltip cursor={false} content={<ChartTooltipContent />} />
 							<Line
-								dataKey={name}
+								dataKey={topic}
 								type="natural"
-								stroke={`var(--color-${name})`}
+								stroke={`var(--color-${topic})`}
 								strokeWidth={2}
 								dot={false}
 							/>

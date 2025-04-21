@@ -7,10 +7,12 @@ export const ListSwitch = ({
 	deviceId,
 	refresh,
 	userId,
+	// fields,
 }: {
 	deviceId: string
 	refresh: boolean
 	userId: string
+	// fields: string[] | null
 }) => {
 	const [switches, setSwitches] = useState<SwitchButtonProps[]>([])
 	const getSwitches = async () => {
@@ -34,6 +36,7 @@ export const ListSwitch = ({
 		<div className="flex flex-wrap justify-center space-x-10 space-y-4">
 			{switches.map((sw) => (
 				<SwitchButton
+					key={sw.id} // Add a unique key for each switch
 					id={sw.id}
 					switchName={sw.switch_name}
 					topic={sw.topic}

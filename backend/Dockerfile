@@ -12,4 +12,4 @@ COPY . .
 # Set Python path to include current directory
 ENV PYTHONPATH=/app
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "user_main:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -14,8 +14,8 @@ from controller.DataCollector import _lifespan
 
 
 
-app = FastAPI(lifespan=_lifespan)
-#app = FastAPI()
+#app = FastAPI(lifespan=_lifespan)
+app = FastAPI()
 # Mount static files with correct directory path
 app.mount("/static", StaticFiles(directory="static", html=True), name="static")
 

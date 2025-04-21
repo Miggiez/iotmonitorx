@@ -24,8 +24,8 @@ import { FormCharts } from "./form-chart"
 import { FormGauges } from "./form-gauges"
 import { ChartFormProps, GaugeFormProps, SwitchButtonFormProps } from "@/types"
 import { FormSwitch } from "./form-switch"
-import { getAllFields } from "@/api/fields"
 
+import { getAllFields } from "@/api/fields"
 export function FormGaugesCharts({ deviceId }: { deviceId: string }) {
 	const { refresh, setRefresh } = useRefreshContext()
 	const [formGauges, setFormGauges] = useState<GaugeFormProps>({
@@ -45,7 +45,6 @@ export function FormGaugesCharts({ deviceId }: { deviceId: string }) {
 	const [formCharts, setFormCharts] = useState<ChartFormProps>({
 		title: "",
 		topic: "",
-		name: "",
 		color: "black",
 	})
 	const { user } = useUserContext()
@@ -65,7 +64,6 @@ export function FormGaugesCharts({ deviceId }: { deviceId: string }) {
 		setFormCharts({
 			title: "",
 			topic: "",
-			name: "",
 			color: "black",
 		})
 		setFormSwitch({
@@ -110,7 +108,6 @@ export function FormGaugesCharts({ deviceId }: { deviceId: string }) {
 			data: {
 				title: formCharts.title,
 				topic: formCharts.topic,
-				name: formCharts.name,
 				color: formCharts.color,
 				device_id: deviceId,
 			},

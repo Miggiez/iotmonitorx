@@ -17,7 +17,7 @@ def user_individual_serial(users):
     }
 
 
-def get_project_device(projects: list[ObjectId]):
+def get_project_device(projects: list):
     proj_list = []
     for i in projects:
         proj = project_col.find_one({"_id": i})

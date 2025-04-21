@@ -1,12 +1,12 @@
 import json
 from contextlib import asynccontextmanager
+import os
 from typing import Any
 
 import uvicorn
 from bson import ObjectId
 from configurations import devices_col, fast_mq, influx_connection, user_col
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 from gmqtt import Client as MQTTClient
 from pymongo.errors import ConnectionFailure
 from pymongo.mongo_client import MongoClient
@@ -14,33 +14,28 @@ from routes.auth import auth_router
 from routes.chart import chart_router
 from routes.devices import device_router
 from routes.gauge import gauge_router
-from routes.logs import log_router
 from routes.project import project_router
-from routes.switch import switch_router
 from routes.user import user_router
 
 from influxdb import InfluxDBClient
 
-INFLUXDB_HOST = "127.0.0.1"
+INFLUXDB_HOST = "influxdb1"
 INFLUXDB_PORT = 8086
 
 
-@asynccontextmanager
-async def _lifespan(_app: FastAPI):
-    await fast_mq.mqtt_startup()
-    yield
-    await fast_mq.mqtt_shutdown()
+# uri = os.environ.get("MONGODB_URI", "mongodb://localhost:27017")
+uri = "mongodb://mongodb1:27017"  #
+client = MongoClient(uri)
+
+try:
+    client.admin.command("ping")
+    print("Connection Successful")
+except ConnectionFailure:
+    print("Failed to connect to Mongodb Server")
 
 
-app = FastAPI(lifespan=_lifespan)
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # or specify your frontend URL like ["http://localhost:5173"]
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+
 
 
 def split_topic(topic: str):
@@ -94,11 +89,15 @@ async def message(
     user = user_col.find_one({"_id": ObjectId(user_id)})
     device = devices_col.find_one({"_id": ObjectId(dev_id)})
 
-    if not user:
-        return
-    else:
-        if not device:
+    if user:
+        if device:
+            influx.create_database(user_id)
+        else:
+            print("There is no such device")
             return
+    else:
+        print("There is no user with this id")
+        return
 
     try:
         if is_json(payload):
@@ -112,25 +111,3 @@ async def message(
 @fast_mq.on_disconnect()
 def disconnect(client: MQTTClient, packet, exc=None):
     print("Disconnected")
-
-
-uri = "mongodb://localhost:27018"
-client = MongoClient(uri)
-
-try:
-    client.admin.command("ping")
-    print("Connection Successful")
-except ConnectionFailure:
-    print("Failed to connect to Mongodb Server")
-
-app.include_router(device_router)
-app.include_router(project_router)
-app.include_router(user_router)
-app.include_router(chart_router)
-app.include_router(auth_router)
-app.include_router(gauge_router)
-app.include_router(switch_router)
-app.include_router(log_router)
-
-if __name__ == "__main__":
-    uvicorn.run(app=app, host="127.0.0.1", port=8000)

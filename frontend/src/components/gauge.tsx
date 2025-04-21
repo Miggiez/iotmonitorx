@@ -109,7 +109,7 @@ export default function Gauge({
 	const handleSubmitGauge = async (e: React.MouseEvent<HTMLButtonElement>) => {
 		e.preventDefault()
 		await axios({
-			method: "post",
+			method: "put",
 			url: `/api/gauges/edit/${id}/${userId}`,
 			headers: {
 				Authorization: `Bearer ${localStorage.getItem("token")}`,

@@ -41,14 +41,12 @@ class DeviceUpdate(BaseModel):
 
 
 @device_router.post("/create/{user_id}", status_code=status.HTTP_201_CREATED)
-async def post_device(
-    user_id: str, devices: Devices, role: Annotated[str, Depends(isAuthorized)]
-):
+async def post_device(user_id: str, devices: Devices):
     project = project_col.find_one({"_id": ObjectId(devices.project_id)})
     if not project:
         await post_logs(
             logs=Logs(
-                t_type=LogEnum.error,
+                l_typ=LogEnum.error,
                 description=f"Project with id {devices.project_id} is not found. Failed to create Device!",
                 level=LevelEnum.device,
                 user_id=user_id,
@@ -92,15 +90,13 @@ async def post_device(
 
 
 @device_router.get("/get/{id}/{user_id}", status_code=status.HTTP_201_CREATED)
-async def get_device(
-    id: str, user_id: str, role: Annotated[str, Depends(isAuthorized)]
-):
+async def get_device(id: str, user_id: str):
     print(id)
     device = devices_col.find_one({"_id": ObjectId(id)})
     if not device:
         await post_logs(
             logs=Logs(
-                t_type=LogEnum.error,
+                l_typ=LogEnum.error,
                 description=f"Device with this id: {id} is not found. Failed to get Device!",
                 level=LevelEnum.device,
                 user_id=user_id,
@@ -123,54 +119,58 @@ async def edit_device(
     devices: DeviceUpdate,
     role: Annotated[str, Depends(isAuthorized)],
 ):
-    dev = devices_col.find_one({"_id": ObjectId(id)})
-    if dev is None:
+    try:
+        dev = devices_col.find_one({"_id": ObjectId(id)})
+        if dev is None:
+            await post_logs(
+                logs=Logs(
+                    l_type=LogEnum.error,
+                    description=f"Device with this id: {id} is not found. Failed to edit Device!",
+                    level=LevelEnum.device,
+                    user_id=user_id,
+                    updated_at=datetime.now(),
+                    created_at=datetime.now(),
+                )
+            )
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Device with this id: {id} is not found. Failed to edit Device!",
+            )
+        device = Devices(
+            device_name=devices.device_name,
+            charts=dev["charts"],
+            gauges=dev["gauges"],
+            project_id=dev["project_id"],
+            created_at=dev["created_at"],
+            updated_at=datetime.now(),
+        )
+        devices_col.update_one({"_id": ObjectId(id)}, {"$set": dict(device)})
         await post_logs(
             logs=Logs(
-                t_type=LogEnum.error,
-                description=f"Device with this id: {id} is not found. Failed to edit Device!",
+                l_type=LogEnum.message,
+                description=f"Successfully edited Device {id}",
                 level=LevelEnum.device,
                 user_id=user_id,
                 updated_at=datetime.now(),
                 created_at=datetime.now(),
             )
         )
+        return {"message": f"Successfully edited Device {id}"}
+    except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Device with this id: {id} is not found. Failed to edit Device!",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"{e}",
         )
-    device = Devices(
-        device_name=devices.device_name,
-        charts=dev["charts"],
-        gauges=dev["gauges"],
-        project_id=dev["project_id"],
-        created_at=dev["created_at"],
-        updated_at=datetime.now(),
-    )
-    devices_col.update_one({"_id": ObjectId(id)}, {"$set": dict(device)})
-    await post_logs(
-        logs=Logs(
-            t_type=LogEnum.message,
-            description=f"Successfully edited Device {id}",
-            level=LevelEnum.device,
-            user_id=user_id,
-            updated_at=datetime.now(),
-            created_at=datetime.now(),
-        )
-    )
-    return {"message": f"Successfully edited Device {id}"}
 
 
 @device_router.delete("/delete/{id}/{user_id}", status_code=status.HTTP_200_OK)
-async def delete_device(
-    id: str, user_id: str, role: Annotated[str, Depends(isAuthorized)]
-):
+async def delete_device(id: str, user_id: str):
     influx = influx_connection()
     device = devices_col.find_one({"_id": ObjectId(id)})
     if device is None:
         await post_logs(
             logs=Logs(
-                t_type=LogEnum.error,
+                l_type=LogEnum.error,
                 description=f"Device with this id: {id} is not found. Failed to delete Device!",
                 level=LevelEnum.device,
                 user_id=user_id,
@@ -205,14 +205,12 @@ async def delete_device(
 
 
 @device_router.get("/{id}/getall/charts/{user_id}", status_code=status.HTTP_200_OK)
-async def get_all_charts(
-    id: str, user_id: str, role: Annotated[str, Depends(isAuthorized)]
-):
+async def get_all_charts(id: str, user_id: str):
     device = devices_col.find_one({"_id": ObjectId(id)})
     if not device:
         await post_logs(
             logs=Logs(
-                t_type=LogEnum.error,
+                l_typ=LogEnum.error,
                 description=f"Device with this id: {id} is not found. Failed to get all Charts!",
                 level=LevelEnum.device,
                 user_id=user_id,
@@ -231,14 +229,12 @@ async def get_all_charts(
 
 
 @device_router.get("/{id}/getall/gauges/{user_id}", status_code=status.HTTP_200_OK)
-async def get_all_gauges(
-    id: str, user_id: str, role: Annotated[str, Depends(isAuthorized)]
-):
+async def get_all_gauges(id: str, user_id: str):
     device = devices_col.find_one({"_id": ObjectId(id)})
     if not device:
         await post_logs(
             logs=Logs(
-                t_type=LogEnum.error,
+                l_typ=LogEnum.error,
                 description=f"Device with this id: {id} is not found. Failed to get all Gauges!",
                 level=LevelEnum.device,
                 user_id=user_id,
@@ -257,14 +253,12 @@ async def get_all_gauges(
 
 
 @device_router.get("/{id}/getall/switches/{user_id}", status_code=status.HTTP_200_OK)
-async def get_all_switches(
-    id: str, user_id: str, role: Annotated[str, Depends(isAuthorized)]
-):
+async def get_all_switches(id: str, user_id: str):
     device = devices_col.find_one({"_id": ObjectId(id)})
     if not device:
         await post_logs(
             logs=Logs(
-                t_type=LogEnum.error,
+                l_typ=LogEnum.error,
                 description=f"Device with this id: {id} is not found. Failed to get all Switch!",
                 level=LevelEnum.device,
                 user_id=user_id,
@@ -283,15 +277,13 @@ async def get_all_switches(
 
 
 @device_router.get("/{user_id}/{id}/getall/fields", status_code=status.HTTP_200_OK)
-async def get_all_fields(
-    id: str, user_id: str, role: Annotated[str, Depends(isAuthorized)]
-):
+async def get_all_fields(id: str, user_id: str):
     device = devices_col.find_one({"_id": ObjectId(id)})
     user = user_col.find_one({"_id": ObjectId(user_id)})
     if not user:
         await post_logs(
             logs=Logs(
-                t_type=LogEnum.error,
+                l_typ=LogEnum.error,
                 description=f"User with this id: {id} is not found. Failed to get all Fields!",
                 level=LevelEnum.device,
                 user_id=user_id,
@@ -322,13 +314,7 @@ async def get_all_fields(
 
 
 @device_router.get("/{user_id}/{id}/chart/{field}/{time}")
-async def get_chart_value(
-    user_id: str,
-    id: str,
-    field: str,
-    time: str,
-    role: Annotated[str, Depends(isAuthorized)],
-):
+async def get_chart_value(user_id: str, id: str, field: str, time: str):
     device = devices_col.find_one({"_id": ObjectId(id)})
     user = user_col.find_one({"_id": ObjectId(user_id)})
     if not user:
@@ -352,9 +338,7 @@ async def get_chart_value(
 
 
 @device_router.get("/{user_id}/{id}/gauge/{field}")
-async def get_gauge_value(
-    user_id: str, id: str, field: str, role: Annotated[str, Depends(isAuthorized)]
-):
+async def get_gauge_value(user_id: str, id: str, field: str):
     device = devices_col.find_one({"_id": ObjectId(id)})
     user = user_col.find_one({"_id": ObjectId(user_id)})
     if not user:
@@ -378,9 +362,7 @@ async def get_gauge_value(
 
 
 @device_router.get("/{user_id}/{id}/switch/{field}")
-async def get_switch_value(
-    user_id: str, id: str, field: str, role: Annotated[str, Depends(isAuthorized)]
-):
+async def get_switch_value(user_id: str, id: str, field: str):
     device = devices_col.find_one({"_id": ObjectId(id)})
     user = user_col.find_one({"_id": ObjectId(user_id)})
     if not user:
@@ -402,10 +384,13 @@ async def get_switch_value(
 
 
 @device_router.post("/button/press")
-async def create_publish(topic: Publisher, role: Annotated[str, Depends(isAuthorized)]):
-    user_id = topic.user_id
-    device_id = topic.device_id
-    name = topic.name
-    state = topic.state
-    fast_mq.publish(f"/{user_id}/{device_id}/{name}", payload={f"{name}": state})
-    return {"message": "Successfully published a topic"}
+async def create_publish(topic: Publisher):
+    try:
+        user_id = topic.user_id
+        device_id = topic.device_id
+        name = topic.name
+        state = topic.state
+        fast_mq.publish(f"/{user_id}/{device_id}/{name}", payload={f"{name}": state})
+        return {"message": "Successfully published a topic"}
+    except Exception:
+        print("There is problme in /button/press")

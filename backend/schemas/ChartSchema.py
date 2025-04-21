@@ -3,7 +3,6 @@ def chart_individual_serial(charts):
         "id": str(charts["_id"]),
         "title": charts["title"],
         "topic": charts["topic"],
-        "name": charts["name"],
         "color": charts["color"],
         "created_at": charts["created_at"],
         "updated_at": charts["updated_at"],

@@ -20,7 +20,6 @@ class GaugeMeasurements(BaseModel):
 class ChartMeasurement(BaseModel):
     title: str
     topic: str
-    name: str
     color: str
     device_id: str
     updated_at: datetime = None

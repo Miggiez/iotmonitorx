@@ -16,7 +16,6 @@ chart_router = APIRouter(prefix="/charts", tags=["charts"])
 class ChartMeasurementEdit(BaseModel):
     title: str
     topic: str
-    name: str
     color: str
 
 
@@ -44,7 +43,6 @@ async def create_chart(
     chart = ChartMeasurement(
         title=charts.title,
         topic=charts.topic,
-        name=charts.name,
         color=charts.color,
         device_id=charts.device_id,
         created_at=datetime.now(),
@@ -119,7 +117,6 @@ async def edit_chart(
     chart = ChartMeasurement(
         title=charts.title,
         topic=charts.topic,
-        name=charts.name,
         color=charts.color,
         device_id=ch["device_id"],
         created_at=ch["created_at"],

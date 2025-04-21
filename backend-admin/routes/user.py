@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 
 from bson import ObjectId
 from configurations import influx_connection, logs_col, user_col
@@ -55,5 +56,9 @@ async def get_projects(id: str):
             detail=f"User with id {id} does not exist!",
         )
     # projects = project_list_serial(project_col.find({"_id": {"$in": user["project"]}}))
-    projects = get_project_device(user["project"])
+    Proj_string_list = [json.dumps(obj, default=str) for obj in user["project"]]
+
+   
+    projects = get_project_device(Proj_string_list)
     return projects
+

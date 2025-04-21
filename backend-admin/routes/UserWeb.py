@@ -96,13 +96,13 @@ async def register_user(request: Request, username: str = Form(...), email: str 
     message_type = "info"
     message = ""
     try:
-        hashed_password = bcrypt_context.hash(password)
+        # hashed_password = bcrypt_context.hash(password)
         current_time = datetime.now()
         user_data = {
             "username": username,
             "email": email,
             "role": role,
-            "password": hashed_password,
+            "password": password,
             "project": [],
             "logs": [],
             "created_at": current_time,

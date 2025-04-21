@@ -1,19 +1,10 @@
-from datetime import datetime
-from typing import Annotated
-
 from bson import ObjectId
-from configurations import influx_connection, logs_col, user_col
-from fastapi import APIRouter, Depends, HTTPException, status
+from configurations import logs_col, user_col
+from fastapi import APIRouter, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from models.UserModel import User
 from passlib.context import CryptContext
-from routes.auth import isAuthorized
 from schemas.LogSchema import log_list_serial
-from schemas.UserSchema import (
-    delete_projects_array,
-    get_project_device,
-    user_individual_serial,
-)
+from schemas.UserSchema import get_project_device, user_individual_serial
 
 user_router = APIRouter(prefix="/user", tags=["user"])
 SECRET_KEY = "your_super_secret_key_here"
@@ -22,38 +13,30 @@ bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_bearer = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
-@user_router.post("/create/user", status_code=status.HTTP_201_CREATED)
-async def register_user(user: User, role: Annotated[str, Depends(isAuthorized)]):
-    # Check if the username already exists
-    if role != "admin":
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="You are not authorized to do this action!",
-        )
-    if user_col.find_one({"username": user.username}):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"User with username {user.username} already exist, please use another username. Failed to create User!",
-        )
+# @user_router.post("/create/user", status_code=status.HTTP_201_CREATED)
+# async def register_user(user: User):
+#     # Check if the username already exists
+#     if user_col.find_one({"username": user.username}):
+#         raise HTTPException(
+#             status_code=status.HTTP_400_BAD_REQUEST,
+#             detail=f"User with username {user.username} already exist, please use another username. Failed to create User!",
+#         )
 
-    influx = influx_connection()
-
-    # Hash the password
-    hashed_password = bcrypt_context.hash(user.password)
-    db_user = User(
-        username=user.username,
-        email=user.email,
-        password=hashed_password,
-        project=[],
-        logs=[],
-        role=user.role,
-        created_at=datetime.now(),
-        updated_at=datetime.now(),
-    )  # Added email field
-    # Store the user in the database
-    id = user_col.insert_one(dict(db_user)).inserted_id
-    influx.create_database(str(id))
-    return {"message": "User created successfully", "user": db_user.username}
+#     # Hash the password
+#     hashed_password = bcrypt_context.hash(user.password)
+#     db_user = User(
+#         username=user.username,
+#         email=user.email,
+#         password=hashed_password,
+#         project=[],
+#         logs=[],
+#         role=user.role,
+#         created_at=datetime.now(),
+#         updated_at=datetime.now(),
+#     )  # Added email field
+#     # Store the user in the database
+#     user_col.insert_one(dict(db_user))
+#     return {"message": "User created successfully", "user": db_user.username}
 
 
 # @user_router.get("/get/users", status_code=status.HTTP_200_OK)
@@ -62,13 +45,7 @@ async def register_user(user: User, role: Annotated[str, Depends(isAuthorized)])
 
 
 @user_router.get("/get/user/{user_id}", status_code=status.HTTP_200_OK)
-async def find_user_by_id(user_id: str, role: Annotated[str, Depends(isAuthorized)]):
-    if role != "admin":
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="You are not authorized to do this action!",
-        )
-
+async def find_user_by_id(user_id: str):
     user = user_col.find_one({"_id": ObjectId(user_id)})
     if user:
         return user_individual_serial(user)
@@ -112,28 +89,23 @@ async def find_user_by_id(user_id: str, role: Annotated[str, Depends(isAuthorize
 #         )
 
 
-@user_router.delete("/delete/user/{user_id}", status_code=status.HTTP_202_ACCEPTED)
-async def delete_user(user_id: str, role: Annotated[str, Depends(isAuthorized)]):
-    if role != "admin":
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="You are not authorized to do this action!",
-        )
-    influx = influx_connection()
-    user = user_col.find_one({"_id": ObjectId(user_id)})
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found!"
-        )
-    influx.drop_database(user_id)
-    await delete_projects_array(user["project"])
-    logs_col.delete_many({"_id": {"$in": user["logs"]}})
-    user_col.delete_one({"_id": ObjectId(user_id)})
-    return {"message": f"User with id: {user_id} is successfully deleted!"}
+# @user_router.delete("/delete/user/{user_id}", status_code=status.HTTP_202_ACCEPTED)
+# async def delete_user(user_id: str):
+#     influx = influx_connection()
+#     user = user_col.find_one({"_id": ObjectId(user_id)})
+#     if user is None:
+#         raise HTTPException(
+#             status_code=status.HTTP_404_NOT_FOUND, detail="User not found!"
+#         )
+#     influx.drop_database(user_id)
+#     await delete_projects_array(user["project"])
+#     logs_col.delete_many({"_id": {"$in": user["logs"]}})
+#     user_col.delete_one({"_id": ObjectId(user_id)})
+#     return {"message": f"User with id: {user_id} is successfully deleted!"}
 
 
 @user_router.get("/{id}/getall/logs", status_code=status.HTTP_200_OK)
-async def get_all_logs(id: str, role: Annotated[str, Depends(isAuthorized)]):
+async def get_all_logs(id: str):
     user = user_col.find_one({"_id": ObjectId(id)})
     if user is None:
         raise HTTPException(

@@ -14,9 +14,8 @@ switch_router = APIRouter(prefix="/switches", tags=["switches"])
 
 
 class SwitchButtonEdit(BaseModel):
-    state_name: str
+    switch_name: str
     topic: str
-    device_id: str
 
 
 @switch_router.post("/create/{user_id}", status_code=status.HTTP_201_CREATED)
@@ -118,7 +117,7 @@ async def edit_switch(
         topic=switches.topic,
         device_id=sw["device_id"],
         updated_at=datetime.now(),
-        created_at=sw["device_id"],
+        created_at=sw["created_at"],
     )
     switch_col.update_one({"_id": ObjectId(id)}, {"$set": dict(switch)})
     await post_logs(
