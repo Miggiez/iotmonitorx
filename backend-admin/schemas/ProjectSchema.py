@@ -1,8 +1,10 @@
 from bson import ObjectId
 from configurations import devices_col
+
 from schemas.DeviceSchema import (
     delete_charts_array,
     delete_gauges_array,
+    delete_switches_array,
 )
 
 # def project_individual_serial(projects):
@@ -24,5 +26,6 @@ async def delete_devices_array(devices: list[ObjectId]):
         if dev:
             await delete_charts_array(dev["charts"])
             await delete_gauges_array(dev["gauges"])
+            await delete_switches_array(dev["switches"])
 
     devices_col.delete_many({"_id": {"$in": devices}})

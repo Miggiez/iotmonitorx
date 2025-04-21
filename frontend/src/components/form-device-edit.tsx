@@ -13,7 +13,7 @@ import { useRefreshContext, useUserContext } from "@/store/generalContext"
 import { useNavigate } from "@tanstack/react-router"
 import axios from "axios"
 import { Edit2 } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 
 export function FormDevicesEdit({ deviceId }: { deviceId: string }) {
 	const navigate = useNavigate()
@@ -68,12 +68,14 @@ export function FormDevicesEdit({ deviceId }: { deviceId: string }) {
 			})
 	}
 
-	useEffect(() => {
-		getIndividualDevice()
-	}, [])
-
 	return (
-		<Dialog open={open} onOpenChange={setOpen}>
+		<Dialog
+			open={open}
+			onOpenChange={async (value) => {
+				setOpen(value)
+				await getIndividualDevice()
+			}}
+		>
 			<DialogTrigger className="cursor-pointer hover:shadow-2xl p-1 hover:border-2 hover:rounded-[5px]">
 				<Edit2 className="text-yellow-600" />
 			</DialogTrigger>

@@ -21,6 +21,7 @@ from schemas.ChartSchema import chart_list_serial
 from schemas.DeviceSchema import (
     delete_charts_array,
     delete_gauges_array,
+    delete_switches_array,
     device_individual_serial,
 )
 from schemas.GaugeSchema import gauge_list_serial
@@ -63,6 +64,7 @@ async def post_device(user_id: str, devices: Devices):
         device_name=devices.device_name,
         charts=[],
         gauges=[],
+        switches=[],
         project_id=devices.project_id,
         created_at=datetime.now(),
         updated_at=datetime.now(),
@@ -140,6 +142,7 @@ async def edit_device(
             device_name=devices.device_name,
             charts=dev["charts"],
             gauges=dev["gauges"],
+            switches=dev["switches"],
             project_id=dev["project_id"],
             created_at=dev["created_at"],
             updated_at=datetime.now(),
@@ -190,6 +193,7 @@ async def delete_device(id: str, user_id: str):
     influx.drop_measurement(id)
     await delete_charts_array(device["charts"])
     await delete_gauges_array(device["gauges"])
+    await delete_switches_array(device["switches"])
     devices_col.delete_one({"_id": ObjectId(id)})
     await post_logs(
         logs=Logs(
