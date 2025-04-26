@@ -17,6 +17,17 @@ services:
       - ./app/templates:/app/templates
       - ./app/static:/app/static
 
+  jwkspoint:
+    build: ./jwkspoint
+    container_name: jwkspoint
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    depends_on:
+      - mqtt1
+    networks:
+      - iot-net
+
   backend-admin:
     build: ./backend-admin
     container_name: backend_admin
@@ -69,14 +80,19 @@ services:
       - iot-net
 
   mqtt1:
-    image: eclipse-mosquitto
+    image: emqx
     container_name: mqtt1
     ports:
       - "1883:1883"
-    volumes:
-      - ./mosquitto/config:/mosquitto/config
-      - ./mosquitto/data:/mosquitto/data
-      - ./mosquitto/log:/mosquitto/log
+      - "8083:8083"
+      - "8084:8084"
+      - "8883:8883"
+      - "18083:18083"
+
+    # volumes:
+    #   - ./mosquitto/config:/mosquitto/config
+    #   - ./mosquitto/data:/mosquitto/data
+    #   - ./mosquitto/log:/mosquitto/log
     networks:
       - iot-net
 
