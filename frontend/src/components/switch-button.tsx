@@ -6,6 +6,7 @@ import axios from "axios"
 import { Trash2 } from "lucide-react"
 import { useRefreshContext } from "@/store/generalContext"
 import { SwitchButtonEdit } from "./switch-button-edit"
+import { ShareAPI } from "./share-api"
 export function SwitchButton({
 	id,
 	switchName,
@@ -73,9 +74,7 @@ export function SwitchButton({
 					state: !val,
 				},
 			})
-				.then((res) => {
-					console.log(res.data)
-				})
+				.then()
 				.catch((e) => {
 					console.log("publishSwitch", e.message)
 				})
@@ -96,6 +95,12 @@ export function SwitchButton({
 			<CardHeader className="flex items-center">
 				<CardTitle>{switchName}</CardTitle>
 				<div className="flex gap-5 items-center ml-auto">
+					<ShareAPI
+						userId={userId}
+						componentId={id}
+						topic={topic}
+						componentType={"switch"}
+					/>
 					<SwitchButtonEdit switchId={id} deviceId={deviceId} userId={userId} />
 					<div
 						className=" text-red-400 w-8 cursor-pointer"

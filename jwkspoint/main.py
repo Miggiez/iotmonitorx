@@ -8,6 +8,7 @@ from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError
+from jose import jwt as JJW
 from jwcrypto import jwk, jwt
 from passlib.context import CryptContext
 from pymongo.errors import ConnectionFailure
@@ -132,7 +133,7 @@ def isAuthorized(token: Annotated[str, Depends(oauth2_scheme)]):
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(
+        payload = JJW.decode(
             token, os.environ.get("SECRET"), algorithms=os.environ.get("ALGORITHM")
         )
         email = payload.get("sub")

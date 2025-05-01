@@ -24,6 +24,7 @@ import { Button } from "./ui/button"
 import { Input } from "./ui/input"
 import { Label } from "./ui/label"
 import { getAllFields } from "@/api/fields"
+import { ShareAPI } from "./share-api"
 
 interface GaugeProps {
 	topic: string
@@ -270,15 +271,11 @@ export default function Gauge({
 			})
 	}
 
-	// useEffect(() => {
-	// 	getSingleGauge()
-	// }, [refresh])
-
 	useEffect(() => {
 		if (topic !== "") {
 			const interval = setInterval(() => {
 				getGaugeValue()
-			}, 2000)
+			}, 1000)
 			return () => clearInterval(interval)
 		}
 	}, [])
@@ -287,6 +284,12 @@ export default function Gauge({
 			<CardHeader className="flex items-center">
 				<CardTitle>{title}</CardTitle>
 				<div className="flex gap-5 items-center ml-auto">
+					<ShareAPI
+						userId={userId}
+						componentId={id}
+						componentType={"gauge"}
+						topic={topic}
+					/>
 					{gaugeEdit()}
 					<div
 						className=" text-red-400 w-8 cursor-pointer"

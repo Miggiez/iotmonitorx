@@ -38,6 +38,7 @@ import {
 } from "./ui/dialog"
 import { Button } from "./ui/button"
 import { getAllFields } from "@/api/fields"
+import { ShareAPI } from "./share-api"
 
 interface ChartPropsEdit {
 	title: string
@@ -258,15 +259,11 @@ export default function LineGraph({
 			})
 	}
 
-	// useEffect(() => {
-	// 	getSingleChart()
-	// }, [refresh])
-
 	useEffect(() => {
 		if (topic !== "") {
 			let interval = setInterval(() => {
 				getChartsValue()
-			}, 2000)
+			}, 1000)
 			return () => clearInterval(interval)
 		}
 	}, [refresh])
@@ -275,6 +272,12 @@ export default function LineGraph({
 			<CardHeader className="flex items-center">
 				<CardTitle>{title}</CardTitle>
 				<div className="flex gap-5 items-center ml-auto">
+					<ShareAPI
+						userId={userId}
+						componentId={id}
+						componentType={"chart"}
+						topic={topic}
+					/>
 					{chartEdit()}
 					<div
 						className="text-red-400 w-8 cursor-pointer"
