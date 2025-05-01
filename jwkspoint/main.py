@@ -4,7 +4,6 @@ import time
 from contextlib import asynccontextmanager
 from typing import Annotated
 
-import uvicorn
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
@@ -22,7 +21,9 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/")
 
 def check_db_connection():
     try:
-        client = MongoClient(os.environ["MONGODB_URI"], serverSelectionTimeoutMS=2000)
+        client = MongoClient(
+            os.environ.get("MONGODB_URI"), serverSelectionTimeoutMS=2000
+        )
         # Triggering a command to check connection
         client.admin.command("ping")
         print("MongoDB is running!")
@@ -109,13 +110,16 @@ app.add_middleware(
 
 
 @app.get("/", status_code=status.HTTP_200_OK)
-async def get_mqtt_key(token: str):
+async def get_mqtt_key(token: Annotated[str, Depends(oauth2_scheme)]):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
-    if token != os.environ["MQTT_SECRET"]:
+    print(f"token: {token}")
+    print(f"MQTT_SECRET: {os.environ.get('MQTT_SECRET')}")
+    print(f"does this equal each other? {token == os.environ.get('MQTT_SECRET')}")
+    if token != os.environ.get("MQTT_SECRET"):
         raise credentials_exception
 
     return json.loads(load_public_jwks())
@@ -129,7 +133,7 @@ def isAuthorized(token: Annotated[str, Depends(oauth2_scheme)]):
     )
     try:
         payload = jwt.decode(
-            token, os.environ["SECRET"], algorithms=os.environ["ALGORITHM"]
+            token, os.environ.get("SECRET"), algorithms=os.environ.get("ALGORITHM")
         )
         email = payload.get("sub")
         if email is None:
@@ -158,7 +162,3 @@ async def get_mqtt_auth(role: Annotated[str, Depends(isAuthorized)]):
     save_jwks(jwks)
 
     return {"pass": f"{jwt}"}
-
-
-if __name__ == "__main__":
-    uvicorn.run("main:app", host="127.0.0.1", port=8080, reload=True)

@@ -7,7 +7,7 @@ from schemas.LogSchema import log_list_serial
 from schemas.UserSchema import get_project_device, user_individual_serial
 
 user_router = APIRouter(prefix="/user", tags=["user"])
-SECRET_KEY = "your_super_secret_key_here"
+SECRET_KEY = "421c76d77563afa1914846b010bd164f395bd34c2102e5e99e0cb9cf173c1d87"
 ALGORITHM = "HS256"
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_bearer = OAuth2PasswordBearer(tokenUrl="/auth/login")

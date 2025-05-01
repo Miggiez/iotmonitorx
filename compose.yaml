@@ -20,6 +20,13 @@ services:
       context: ./jwkspoint
       dockerfile: Dockerfile
     container_name: jwkspoint
+    env_file:
+      - ./jwkspoint/.env
+    # environment:
+    #   SECRET: ${SECRET}
+    #   MONGODB_URI: ${MONGODB_URI}
+    #   ALGORITHM: ${ALGORITHM}
+    #   MQTT_SECRET: ${MQTT_SECRET}
     ports:
       - "8080:8080"
     restart: unless-stopped
@@ -54,6 +61,7 @@ services:
       - "80:80" # Changed to standard HTTP port
     depends_on:
       - backend
+      - jwkspoint
       # - backend-admin
     networks:
       - iot-net
