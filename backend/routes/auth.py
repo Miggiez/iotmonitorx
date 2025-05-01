@@ -13,7 +13,7 @@ from routes.logs import post_logs
 auth_router = APIRouter(prefix="/auth", tags=["auth"])
 
 # JWT Config
-SECRET_KEY = "your_super_secret_key_here"
+SECRET_KEY = "421c76d77563afa1914846b010bd164f395bd34c2102e5e99e0cb9cf173c1d87"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 

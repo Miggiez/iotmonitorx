@@ -1,0 +1,156 @@
+# Save the output of this file and use kubectl create -f to import
+# it into Kubernetes.
+#
+# Created with podman-5.4.2
+
+# NOTE: The namespace sharing for a pod has been modified by the user and is not the same as the
+# default settings for kubernetes. This can lead to unexpected behavior when running the generated
+# kube yaml in a kubernetes cluster.
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: "2025-05-01T04:08:49Z"
+  labels:
+    app: podiotwebproject
+  name: podiotwebproject
+spec:
+  ports:
+  - name: "8080"
+    nodePort: 30171
+    port: 8080
+    targetPort: 8080
+  - name: "27017"
+    nodePort: 30562
+    port: 27017
+    targetPort: 27017
+  - name: "8086"
+    nodePort: 32492
+    port: 8086
+    targetPort: 8086
+  - name: "1883"
+    nodePort: 31583
+    port: 1883
+    targetPort: 1883
+  - name: "8083"
+    nodePort: 31901
+    port: 8083
+    targetPort: 8083
+  - name: "8084"
+    nodePort: 30227
+    port: 8084
+    targetPort: 8084
+  - name: "8883"
+    nodePort: 31552
+    port: 8883
+    targetPort: 8883
+  - name: "18083"
+    nodePort: 32467
+    port: 18083
+    targetPort: 18083
+  - name: "8000"
+    nodePort: 30606
+    port: 8000
+    targetPort: 8000
+  - name: "7000"
+    nodePort: 31589
+    port: 7000
+    targetPort: 7000
+  - name: "80"
+    nodePort: 30712
+    port: 80
+    targetPort: 80
+  selector:
+    app: podiotwebproject
+  type: NodePort
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    io.kubernetes.cri-o.SandboxID/backend: 3063144d08c982aef57d6c90a28ea640099eb119122b48d1f8a8278b0d043f8b
+    io.kubernetes.cri-o.SandboxID/backendadmin: 3063144d08c982aef57d6c90a28ea640099eb119122b48d1f8a8278b0d043f8b
+    io.kubernetes.cri-o.SandboxID/influxdb1: 3063144d08c982aef57d6c90a28ea640099eb119122b48d1f8a8278b0d043f8b
+    io.kubernetes.cri-o.SandboxID/jwkspoint: 3063144d08c982aef57d6c90a28ea640099eb119122b48d1f8a8278b0d043f8b
+    io.kubernetes.cri-o.SandboxID/mongodb1: 3063144d08c982aef57d6c90a28ea640099eb119122b48d1f8a8278b0d043f8b
+    io.kubernetes.cri-o.SandboxID/mqtt1: 3063144d08c982aef57d6c90a28ea640099eb119122b48d1f8a8278b0d043f8b
+    io.kubernetes.cri-o.SandboxID/nginx: 3063144d08c982aef57d6c90a28ea640099eb119122b48d1f8a8278b0d043f8b
+  creationTimestamp: "2025-05-01T04:08:49Z"
+  labels:
+    app: podiotwebproject
+  name: podiotwebproject
+spec:
+  containers:
+  - image: localhost/iotwebproject_jwkspoint:latest
+    name: jwkspoint
+    ports:
+    - containerPort: 8080
+  - args:
+    - mongod
+    image: docker.io/library/mongo:latest
+    name: mongodb1
+    ports:
+    - containerPort: 27017
+    volumeMounts:
+    - mountPath: /data/configdb
+      name: b46abafd630b938bb99ec33072c2d5aaa2ff57ad36b17fac4085e3a18bcc1f82-pvc
+    - mountPath: /data/db
+      name: iotwebproject-mongo-data-pvc
+  - args:
+    - influxd
+    image: docker.io/library/influxdb:1.8
+    name: influxdb1
+    ports:
+    - containerPort: 8086
+    volumeMounts:
+    - mountPath: /var/lib/influxdb
+      name: iotwebproject-influxdb-data-pvc
+  - args:
+    - /opt/emqx/bin/emqx
+    - foreground
+    image: docker.io/library/emqx:latest
+    name: mqtt1
+    ports:
+    - containerPort: 1883
+    - containerPort: 8083
+    - containerPort: 8084
+    - containerPort: 8883
+    - containerPort: 18083
+    securityContext: {}
+    volumeMounts:
+    - mountPath: /opt/emqx/data
+      name: 591f9caaa217dc6baaf118f36557e027ebbd6c2e04148987bb402046ae96949c-pvc
+    - mountPath: /opt/emqx/log
+      name: 1de2d3a12bf8de680323c51357cfe58ab00f383ffd5771d0ecacb625c2f4759d-pvc
+  - image: localhost/iotwebproject_backend:latest
+    name: backend
+    ports:
+    - containerPort: 8000
+  - image: localhost/iotwebproject_backend-admin:latest
+    name: backendadmin
+    ports:
+    - containerPort: 7000
+  - args:
+    - nginx
+    - -g
+    - daemon off;
+    image: localhost/iotwebproject_nginx:latest
+    name: nginx
+    ports:
+    - containerPort: 80
+  volumes:
+  - name: iotwebproject-mongo-data-pvc
+    persistentVolumeClaim:
+      claimName: iotwebproject-mongo-data
+  - name: iotwebproject-influxdb-data-pvc
+    persistentVolumeClaim:
+      claimName: iotwebproject-influxdb-data
+  - name: 591f9caaa217dc6baaf118f36557e027ebbd6c2e04148987bb402046ae96949c-pvc
+    persistentVolumeClaim:
+      claimName: 591f9caaa217dc6baaf118f36557e027ebbd6c2e04148987bb402046ae96949c
+  - name: 1de2d3a12bf8de680323c51357cfe58ab00f383ffd5771d0ecacb625c2f4759d-pvc
+    persistentVolumeClaim:
+      claimName: 1de2d3a12bf8de680323c51357cfe58ab00f383ffd5771d0ecacb625c2f4759d
+  - name: b46abafd630b938bb99ec33072c2d5aaa2ff57ad36b17fac4085e3a18bcc1f82-pvc
+    persistentVolumeClaim:
+      claimName: b46abafd630b938bb99ec33072c2d5aaa2ff57ad36b17fac4085e3a18bcc1f82

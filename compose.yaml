@@ -1,6 +1,8 @@
 services:
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: backend
     ports:
       - "8000:8000"
@@ -12,24 +14,22 @@ services:
     #   MONGO_URI: "mongodb://mongodb:27017/user_db"
     networks:
       - iot-net
-    volumes:
-      - ./backend:/app
-      - ./app/templates:/app/templates
-      - ./app/static:/app/static
 
   jwkspoint:
-    build: ./jwkspoint
+    build:
+      context: ./jwkspoint
+      dockerfile: Dockerfile
     container_name: jwkspoint
     ports:
       - "8080:8080"
     restart: unless-stopped
-    depends_on:
-      - mqtt1
     networks:
       - iot-net
 
   backend-admin:
-    build: ./backend-admin
+    build:
+      context: ./backend-admin
+      dockerfile: Dockerfile
     container_name: backend_admin
     ports:
       - "7000:7000"
@@ -42,10 +42,10 @@ services:
     #   MONGO_URI: "mongodb://mongodb:27017/user_db"
     networks:
       - iot-net
-    volumes:
-      - ./backend-admin:/app
-      - ./backend-admin/templates:/app/templates
-      - ./backend-admin/static:/app/static
+    # volumes:
+    #   - ./backend-admin:/app
+    #   - ./backend-admin/templates:/app/templates
+    #   - ./backend-admin/static:/app/static
 
   nginx:
     build: ./frontend
@@ -54,7 +54,7 @@ services:
       - "80:80" # Changed to standard HTTP port
     depends_on:
       - backend
-      - backend-admin
+      # - backend-admin
     networks:
       - iot-net
 
@@ -75,7 +75,7 @@ services:
     ports:
       - "8086:8086"
     volumes:
-      - ./influxdb-data:/var/lib/influxdb
+      - influxdb-data:/var/lib/influxdb
     networks:
       - iot-net
 

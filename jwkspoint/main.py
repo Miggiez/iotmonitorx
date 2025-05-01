@@ -1,11 +1,41 @@
 import json
+import os
+import time
 from contextlib import asynccontextmanager
+from typing import Annotated
 
-from fastapi import FastAPI
+import uvicorn
+from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import OAuth2PasswordBearer
+from jose import JWTError
 from jwcrypto import jwk, jwt
+from passlib.context import CryptContext
+from pymongo.errors import ConnectionFailure
+from pymongo.mongo_client import MongoClient
 
 SAVE_TO = "./private.json"
+
+bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/")
+
+
+def check_db_connection():
+    try:
+        client = MongoClient(os.environ["MONGODB_URI"], serverSelectionTimeoutMS=2000)
+        # Triggering a command to check connection
+        client.admin.command("ping")
+        print("MongoDB is running!")
+        return client
+    except ConnectionFailure:
+        print("Error: MongoDB is not running!")
+
+
+client = check_db_connection()
+if client:
+    print("MongoDB connection established successfully.")
+    db = client.user_db
+    user_col = db["user_collection"]
 
 
 def issue_jws(key, alg, claims):
@@ -29,8 +59,7 @@ def generate_jwks(number):
 
 
 def get_kid(key):
-    something = key["kid"]
-    return something
+    return key.export(private_key=False, as_dict=True).get("kid")
 
 
 def save_jwks(jwks):
@@ -50,14 +79,15 @@ def load_public_jwks():
     return jwks.export(private_keys=False)
 
 
+def load_jwks_key():
+    private_file = open(SAVE_TO, mode="r")
+    jwks = jwk.JWKSet.from_json(private_file.read())
+    private_file.close()
+    return jwks
+
+
 async def on_start():
     jwks = generate_jwks(3)
-    claims = {}
-    claims["client"] = "myclient"
-    claims["username"] = "myuser"
-    jwt = issue_jws(jwks[0], "RS256", claims)
-
-    print("[JWT]\n%s\n" % (jwt))
     save_jwks(jwks)
 
 
@@ -78,17 +108,51 @@ app.add_middleware(
 )
 
 
-@app.get("/")
-async def get_mqtt_key():
+@app.get("/", status_code=status.HTTP_200_OK)
+async def get_mqtt_key(token: str):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    if token != os.environ["MQTT_SECRET"]:
+        raise credentials_exception
+
     return json.loads(load_public_jwks())
 
 
-@app.get("/mqtt/auth")
-async def get_mqtt_auth():
-    jwks = generate_jwks(3)
+def isAuthorized(token: Annotated[str, Depends(oauth2_scheme)]):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(
+            token, os.environ["SECRET"], algorithms=os.environ["ALGORITHM"]
+        )
+        email = payload.get("sub")
+        if email is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+
+    user = user_col.find_one({"email": email})
+    if user is None:
+        raise credentials_exception
+
+    return user["role"]
+
+
+@app.get("/mqtt/auth", status_code=status.HTTP_200_OK)
+async def get_mqtt_auth(role: Annotated[str, Depends(isAuthorized)]):
+    jwks = load_jwks_key()
+    jwks = [*jwks["keys"]]
+    expires_in = 12000
     claims = {}
     claims["client"] = "myclient"
     claims["username"] = "myuser"
+    claims["exp"] = int(time.time()) + expires_in
     jwt = issue_jws(jwks[0], "RS256", claims)
 
     save_jwks(jwks)
@@ -96,5 +160,5 @@ async def get_mqtt_auth():
     return {"pass": f"{jwt}"}
 
 
-# if __name__ == "__main__":
-#     uvicorn.run("main:app", host="0.0.0.0", port=8080, reload=True)
+if __name__ == "__main__":
+    uvicorn.run("main:app", host="127.0.0.1", port=8080, reload=True)

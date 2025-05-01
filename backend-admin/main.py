@@ -1,21 +1,14 @@
-from contextlib import asynccontextmanager
+from controller.DataCollector import _lifespan
 from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
-import uvicorn
-
-
 
 # from routes.admin_user import admin_user_router
 # from routes.UserWeb import admin_web_router
 # from routes.auth import auth_router
 from fastapi.middleware.cors import CORSMiddleware
-from controller.DataCollector import _lifespan
-
-
-
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI(lifespan=_lifespan)
-#app = FastAPI()
+# app = FastAPI()
 # Mount static files with correct directory path
 app.mount("/static", StaticFiles(directory="static", html=True), name="static")
 
@@ -29,10 +22,9 @@ app.add_middleware(
 
 try:
     from routes.admin_user import admin_user_router
-    from routes.UserWeb import admin_web_router
-    from routes.auth import auth_router
     from routes.monitor import monitor_router
-    from controller.DataCollector import fast_mq
+    from routes.UserWeb import admin_web_router
+
     app.include_router(admin_user_router)
     app.include_router(admin_web_router)
     app.include_router(monitor_router)
@@ -41,7 +33,5 @@ except Exception as e:
 # app.include_router(auth_router)
 
 
-
-
-if __name__ == "__main__":
-    uvicorn.run(app=app, host="0.0.0.0", port=7000)
+# if __name__ == "__main__":
+#     uvicorn.run(app=app, host="0.0.0.0", port=7000)

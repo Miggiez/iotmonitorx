@@ -2,7 +2,6 @@ from contextlib import asynccontextmanager
 from typing import Any
 
 import configurations
-import uvicorn
 from configurations import fast_mq
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -86,5 +85,5 @@ if configurations.client:
         print(f"Error including routers: {e}")
 
 
-if __name__ == "__main__":
-    uvicorn.run(app=app, host="0.0.0.0", port=8000)
+# if __name__ == "__main__":
+#     uvicorn.run(app=app, host="0.0.0.0", port=8000)
