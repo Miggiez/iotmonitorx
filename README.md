@@ -4,7 +4,7 @@ A modular, full-stack IoT platform designed to connect and monitor diverse IoT d
 
 ## 🌐 Overview
 
-**IoTMonitorX** is a custom-built IoT platform that enables secure, scalable, and flexible integration of any IoT device. It supports real-time data ingestion, visualization, and device management through a microservice architecture powered by modern web and cloud-native technologies.
+**IoTMonitorX** is a custom-built IoT platform that enables secure, scalable, and flexible integration of any IoT device. It supports real-time data ingestion, visualization, and device management.
 
 ## 🧰 Tech Stack
 
